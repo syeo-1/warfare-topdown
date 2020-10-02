@@ -1,0 +1,23 @@
+{
+  "name": "group_20_game",
+  "version": "1.0.0",
+  "description": "Seng 350 Group Multiplayer Game",
+  "main": "server.js",
+  "scripts": {
+    "test": "test",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.csc.uvic.ca/courses/2020091/SENG350/teams/group_20/group_20_game.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "nodemon": "^2.0.4",
+    "pg": "^8.3.3",
+    "socket.io": "^2.3.0"
+  }
+}
