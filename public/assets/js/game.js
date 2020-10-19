@@ -68,6 +68,23 @@ class BootScene extends Phaser.Scene {
       this.socket.on('newPlayer', function (playerInfo) {
         this.addOtherPlayers(playerInfo);
       }.bind(this))
+
+      this.socket.on('disconnect', function (playerId) {
+        this.otherPlayers.getChildren().forEach(function (player) {
+          if (playerId === player.playerId) {
+            player.destroy();
+          }
+        }.bind(this));
+      }.bind(this));
+
+      this.socket.on('playerMoved', function (playerInfo) {
+        this.otherPlayers.getChildren().forEach(function (player) {
+          if (playerInfo.playerId === player.playerId) {
+            player.flipX = playerInfo.flipX;
+            player.setPosition(playerInfo.x, playerInfo.y);
+          }
+        }.bind(this));
+      }.bind(this));
   
       
     }
@@ -237,6 +254,20 @@ class BootScene extends Phaser.Scene {
         } else {
           this.player.anims.stop();
         }
+
+        // emit player movement
+        var x = this.container.x;
+        var y = this.container.y;
+        var flipX = this.player.flipX;
+        if (this.container.oldPosition && (x !== this.container.oldPosition.x || y !== this.container.oldPosition.y || flipX !== this.container.oldPosition.flipX)) {
+          this.socket.emit('playerMovement', { x, y, flipX });
+        }
+        // save old position data
+        this.container.oldPosition = {
+          x: this.container.x,
+          y: this.container.y,
+          flipX: this.player.flipX
+        };
       }
     }
   }
@@ -254,7 +285,7 @@ class BootScene extends Phaser.Scene {
         gravity: {
           y: 0
         },
-        debug: true // set to true to view zones
+        debug: false // set to true to view zones
       }
     },
     scene: [
