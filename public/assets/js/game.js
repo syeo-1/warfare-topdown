@@ -1,3 +1,4 @@
+user_id = document.currentScript.getAttribute("user_id");
 class BootScene extends Phaser.Scene {
     constructor() {
       super({
@@ -39,7 +40,10 @@ class BootScene extends Phaser.Scene {
   
     create() {
       this.socket = io();
+      var data = {hi: user_id}
+      this.socket.emit("ehlo", data)
       this.otherPlayers = this.physics.add.group();
+
 
       this.redirect(this.socket);
   
@@ -287,6 +291,7 @@ class BootScene extends Phaser.Scene {
     parent: 'content',
     width: 320,
     height: 240,
+    autoCenter: true,
     zoom: 3,
     pixelArt: true,
     physics: {

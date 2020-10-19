@@ -14,7 +14,11 @@ app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-
 app.use(bodyParser.json()); // parse application/json
 app.use(cookieParser());
 app.use("/", require("./routes/get"));
-// app.use("/", require("./routes/post"));
+app.use("/", require("./routes/post"));
+
+app.set('view engine', 'html');
+app.engine('html', require('ejs').renderFile);
+
 // app.use("/", require("./routes/patch"));
 // app.use("/", require("./routes/delete"));
 

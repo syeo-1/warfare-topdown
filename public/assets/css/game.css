@@ -1,0 +1,17 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Montserrat', sans-serif !important;
+}
+
+.background-dark{
+    background-color: dimgrey;
+}
+.center{
+    text-align: center;
+}
+
+.text-white{
+    color: white;
+}
