@@ -40,9 +40,12 @@ class BootScene extends Phaser.Scene {
     create() {
       this.socket = io();
       this.otherPlayers = this.physics.add.group();
+
+      this.redirect(this.socket);
   
       // create map
       this.createMap();
+
       
   
       // create player animations
@@ -51,9 +54,10 @@ class BootScene extends Phaser.Scene {
   
       // user input
       this.cursors = this.input.keyboard.createCursorKeys();
+      this.cursors = this.input.keyboard.addKeys({up:Phaser.Input.Keyboard.KeyCodes.W, down:Phaser.Input.Keyboard.KeyCodes.S, left:Phaser.Input.Keyboard.KeyCodes.A, right:Phaser.Input.Keyboard.KeyCodes.D});
   
       // create enemies
-      this.createEnemies();
+      //this.createEnemies();
       // listen for web socket events
       this.socket.on('currentPlayers', function (players) {
         Object.keys(players).forEach(function (id) {
@@ -87,6 +91,12 @@ class BootScene extends Phaser.Scene {
       }.bind(this));
   
       
+    }
+
+    redirect(socket){
+      socket.on('redirect', function(destination) {
+          window.location.href = destination;
+      });
     }
   
     createMap() {
@@ -293,5 +303,7 @@ class BootScene extends Phaser.Scene {
       WorldScene
     ]
   };
+
+  
   var game = new Phaser.Game(config);
   
