@@ -43,15 +43,31 @@ class BootScene extends Phaser.Scene {
   
       // create map
       this.createMap();
+      
   
       // create player animations
       this.createAnimations();
+      
   
       // user input
       this.cursors = this.input.keyboard.createCursorKeys();
   
       // create enemies
       this.createEnemies();
+      // listen for web socket events
+      this.socket.on('currentPlayers', function (players) {
+        Object.keys(players).forEach(function (id) {
+          if (players[id].playerId === this.socket.id) {
+            this.createPlayer(players[id]);
+          } else {
+            this.addOtherPlayers(players[id]);
+          }
+        }.bind(this));
+      }.bind(this));
+    
+      this.socket.on('newPlayer', function (playerInfo) {
+        this.addOtherPlayers(playerInfo);
+      }.bind(this))
   
       
     }
