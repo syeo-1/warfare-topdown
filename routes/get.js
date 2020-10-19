@@ -15,4 +15,5 @@ router.get('/', function (req, res) {
 router.get('/game', function (req, res) {
   res.sendFile('./public/game.html', { root: __dirname + "/.." });
 });
+
   module.exports = router;
