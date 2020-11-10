@@ -1,4 +1,5 @@
-user_id = document.currentScript.getAttribute("user_id");
+user_id = document.currentScript.getAttribute("user_id")
+game_id = document.currentScript.getAttribute("game_id");;
 class BootScene extends Phaser.Scene {
     constructor() {
       super({
@@ -40,8 +41,8 @@ class BootScene extends Phaser.Scene {
   
     create() {
       this.socket = io();
-      var data = {hi: user_id}
-      this.socket.emit("ehlo", data)
+      var data = {user_id: user_id, game_id: game_id}
+      this.socket.emit("new_player", data)
       this.otherPlayers = this.physics.add.group();
 
 

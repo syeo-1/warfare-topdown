@@ -63,8 +63,8 @@ router.post('/add_new_user', function (req, res) {
                         console.log(err)
                         return res.status(500).send(err)
                     }
-                    num_players = result.rows[0].num_players + 1
-                    res.status(200).send({success: true, error: "", num_players})
+                    // num_players = result.rows[0].num_players + 1
+                    res.status(200).send({success: true, error: "", game_id: game_id, user_id: user_id})
                 }) 
             })  
         })    

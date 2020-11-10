@@ -16,7 +16,7 @@ $(document).ready(function() {
             
             success: function(response) {
                 if(response.success){
-                    window.location.href = "/game"
+                    window.location.href = "/game?game_id=" + response.game_id + "&user_id=" + response.user_id
                 }
             },
             error: function(error) {
