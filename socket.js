@@ -6,9 +6,9 @@ const players = {};
 exports = module.exports = function(io){
     io.on('connection', function (socket) {
         //update user in database here
+        console.log('a user connected: ', socket.id);
         socket.on('new_player', function(data) {
-                
-            console.log('a user connected: ', socket.id);
+            console.log('new player: ', socket.id);
             console.log(data)
             text  = `select * from users where user_id = $1 and game_id = $2` // check to see if user in_game already
             values = [data.user_id, data.game_id]
@@ -16,7 +16,13 @@ exports = module.exports = function(io){
                 if (err) {
                     return console.log(err)
                 }
+                if(result.rowCount == 0){
+                    var destination = '/';
+                    socket.emit('redirect', destination);
+                    return
+                }
                 if(result.rows[0].in_game){ // user in game already, redirect to home page
+                    console.log("in game already")
                     var destination = '/';
                     socket.emit('redirect', destination);
                     return
@@ -47,7 +53,8 @@ exports = module.exports = function(io){
                     playerId: socket.id,
                     team: team,
                     user_id: data.user_id,
-                    game_id: data.game_id
+                    game_id: data.game_id,
+                    username: result.rows[0].username
                 };
                 // UPDATE REQUEST TO SAVE USER IN DATABASE
                 text  = `update users set team = $1, socket_id = $2, in_game = true where user_id = $3 and game_id = $4;`
@@ -59,9 +66,11 @@ exports = module.exports = function(io){
                 })
 
                 // send the players object to the new player
+                // socket.emit('currentPlayers', players); when ready 
                 socket.emit('currentPlayers', players);
                 // update all other players of the new player
                 socket.broadcast.emit('newPlayer', players[socket.id]);
+                socket.broadcast.emit('allPlayerInfo', players);
             })
         
             

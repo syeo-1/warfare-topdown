@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Warfare Top Down Game</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  
+  <link rel="stylesheet" href="./assets/css/index.css">
+</head>
+
+<body class="background-light">
+  <div class="vertical-centerize">
+    <h1>Game Lobby</h1>
+    
+    <br>
+    <div class="container">
+        <% if(host){ %>
+            <button type="button" class="start-game btn btn-primary">Start Game</button>
+          <% } %>
+          <div class="row">
+            <div class="col-6">
+              TEAM A
+              <div class="team-a-me"></div>
+              <div class="team-a"></div>
+            </div>
+            <div class="col-6">
+              TEAM B
+              <div class="team-b-me"></div>
+              <div class="team-b"></div>
+            </div>
+      
+          </div>
+    </div>
+  </div>
+  
+  <script src="assets/js/lobby.js"user_id=<%= user_id %> game_id=<%= game_id %>></script>
+</body>
+
+</html>

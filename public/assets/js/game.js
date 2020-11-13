@@ -41,8 +41,8 @@ class BootScene extends Phaser.Scene {
   
     create() {
       this.socket = io();
-      var data = {user_id: user_id, game_id: game_id}
-      this.socket.emit("new_player", data)
+      // var data = {user_id: user_id, game_id: game_id}
+      // this.socket.emit("new_player", data)
       this.otherPlayers = this.physics.add.group();
 
 
