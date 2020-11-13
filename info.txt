@@ -1,0 +1,4 @@
+PUSH: heroku pg:push warfare postgresql-flexible-37264 --app warfare-seng350
+-- note that remote DB must be empty to perform a push
+
+PULL: heroku pg:pull postgresql-flexible-37264 warfare --app warfare-seng350
