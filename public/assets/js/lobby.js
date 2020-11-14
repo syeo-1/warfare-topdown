@@ -8,10 +8,7 @@ $(document).ready(function() {
     var data = {user_id: user_id, game_id: game_id}
     socket.emit("new_player", data)
 
-    if(start){
-        socket.broadcast.emit("redirect", "game")
-        start = false
-    }
+    
 
     socket.on('currentPlayers', function(players) {
         teamA = "<ul>"
