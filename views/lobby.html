@@ -13,30 +13,69 @@
   <link rel="stylesheet" href="./assets/css/index.css">
 </head>
 
-<body class="background-light">
-  <div class="vertical-centerize">
-    <h1>Game Lobby</h1>
+<body class="background-light ">
     
-    <br>
-    <div class="container">
-        <% if(host){ %>
-            <button type="button" class="start-game btn btn-primary">Start Game</button>
-          <% } %>
+    <div class="container text-center">
+      <h1>WTD GAME LOBBY</h1>
+    
+      <br>
+        
           <div class="row">
-            <div class="col-6">
-              TEAM A
-              <div class="team-a-me"></div>
+            <div class="col-4">
               <div class="team-a"></div>
             </div>
-            <div class="col-6">
-              TEAM B
-              <div class="team-b-me"></div>
+            <div class="col-4">
+              
+              <ul class="list-group">
+                <ul class="list-group"><li class="list-group-item list-group-item-dark">GAME INFO</li>
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col">
+                      GAME STATUS
+                    </div>
+                    <div class="col">
+                      <div class="timer">Waiting</div>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col">
+                      TEAM A SCORE
+                    </div>
+                    <div class="col">
+                      0
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col">
+                      TEAM B SCORE
+                    </div>
+                    <div class="col">
+                      0
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col">
+                      CLOCK
+                    </div>
+                    <div class="col">
+                      <div class="clock">00:15</div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="col-4">
               <div class="team-b"></div>
             </div>
       
           </div>
     </div>
-  </div>
   <script src="assets/js/game.js" user_id=<%= user_id %> game_id=<%= game_id %>></script>
   <script src="assets/js/lobby.js"user_id=<%= user_id %> game_id=<%= game_id %>></script>
   

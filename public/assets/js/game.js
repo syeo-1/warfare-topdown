@@ -1,5 +1,6 @@
 user_id = document.currentScript.getAttribute("user_id")
 game_id = document.currentScript.getAttribute("game_id");;
+var gameStarted = false;
 class BootScene extends Phaser.Scene {
     constructor() {
       super({
@@ -41,12 +42,13 @@ class BootScene extends Phaser.Scene {
   
     create() {
       this.socket = io();
-      // var data = {user_id: user_id, game_id: game_id}
-      // this.socket.emit("new_player", data)
+      var data = {user_id: user_id, game_id: game_id}
+      this.socket.emit("new_player", data)
       this.otherPlayers = this.physics.add.group();
 
 
       this.redirect(this.socket);
+      this.endGame(this.socket);
   
       // create map
       this.createMap();
@@ -55,12 +57,19 @@ class BootScene extends Phaser.Scene {
   
       // create player animations
       this.createAnimations();
-      
-  
-      // user input
       this.cursors = this.input.keyboard.createCursorKeys();
       this.cursors = this.input.keyboard.addKeys({up:Phaser.Input.Keyboard.KeyCodes.W, down:Phaser.Input.Keyboard.KeyCodes.S, left:Phaser.Input.Keyboard.KeyCodes.A, right:Phaser.Input.Keyboard.KeyCodes.D});
-  
+
+      
+      this.socket.on('startGame', function () {
+        setTimeout(function(){
+          gameStarted = true;
+        }, 5000)
+        
+        
+      }.bind(this))
+      // user input
+     
       // create enemies
       //this.createEnemies();
       // listen for web socket events
@@ -101,6 +110,12 @@ class BootScene extends Phaser.Scene {
     redirect(socket){
       socket.on('redirect', function(destination) {
           window.location.href = destination;
+      });
+    }
+    endGame(socket){
+      socket.on('endGame', function(vars) {
+        //update database here with user + game stats and then nav to game stats page
+          window.location.href = "/";
       });
     }
   
@@ -165,6 +180,12 @@ class BootScene extends Phaser.Scene {
     createPlayer(playerInfo) {
       // our player sprite created through the physics system
       this.player = this.add.sprite(0, 0, 'player', 6);
+      if(playerInfo.team == 'A'){
+        this.player.setTint(0x0000FF);
+      }
+      else{
+        this.player.setTint(0xFF0000);
+      }
   
       this.container = this.add.container(playerInfo.x, playerInfo.y);
       this.container.setSize(16, 16);
@@ -182,7 +203,13 @@ class BootScene extends Phaser.Scene {
   
     addOtherPlayers(playerInfo) {
       const otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'player', 9);
-      otherPlayer.setTint(Math.random() * 0xffffff);
+      if(playerInfo.team == 'A'){
+        otherPlayer.setTint(0x0000FF);
+      }
+      else{
+        otherPlayer.setTint(0xFF0000);
+      }
+      
       otherPlayer.playerId = playerInfo.playerId;
       this.otherPlayers.add(otherPlayer);
     }
@@ -238,7 +265,7 @@ class BootScene extends Phaser.Scene {
     }
   
     update() {
-      if (this.container) {
+      if (this.container && gameStarted) {
         this.container.body.setVelocity(0);
   
         // Horizontal movement
@@ -290,9 +317,9 @@ class BootScene extends Phaser.Scene {
   var config = {
     type: Phaser.AUTO,
     parent: 'content',
-    width: 320,
-    height: 240,
-    autoCenter: true,
+    width: 240,
+    height: 160,
+    autoCenter: false,
     zoom: 3,
     pixelArt: true,
     physics: {

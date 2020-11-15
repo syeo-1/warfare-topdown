@@ -5,13 +5,13 @@ const waitingQueue = require("../waitingQueue")
 
 router.post('/add_new_user', function (req, res) {
     var size = waitingQueue.getSize()
-    if(size >= 4){
+    if(size >= 2){
         return res.status(200).send({success: false, error: "Waiting Queue Full, Please come back later."})
     }
     
     text = `begin;
     select * from users where username = '${req.body.username}';
-    select * from games where num_players <= 7;
+    select * from games where num_players <= 4 and state = 'waiting';
     end;`;
     values = [];
     console.log(req.body.username)

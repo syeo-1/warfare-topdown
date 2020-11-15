@@ -1,5 +1,6 @@
 const sql = require("./SQL_strings");
 const query = require("./queryPool");
+const waitingQueue = require("./waitingQueue")
 
 const players = {};
 
@@ -29,12 +30,7 @@ exports = module.exports = function(io){
                 }
                 
                 
-                if(Object.keys(players).length  >= 8){ // need to create new game here
-                    // need to create new game here
-                    var destination = '/';
-                    socket.emit('redirect', destination);
-                    return
-                }
+                
                 var team = "A"; // team A
                 var x = 50;
                 var y = 20 + (20 * Object.keys(players).length)
@@ -45,7 +41,7 @@ exports = module.exports = function(io){
                 }
                 console.log(team)
                 
-                // create a new player and add it to Team A 
+                // create a new player ]
                 players[socket.id] = {
                     flipX: false,
                     x: x,
@@ -59,18 +55,41 @@ exports = module.exports = function(io){
                 // UPDATE REQUEST TO SAVE USER IN DATABASE
                 text  = `update users set team = $1, socket_id = $2, in_game = true where user_id = $3 and game_id = $4;`
                 values = [team, socket.id, data.user_id, data.game_id]
-                query(text, values, (err, result) => { // postgres database test
+                query(text, values, (err, result) => { 
                     if (err) {
                         return console.log(err)
                     }
                 })
 
                 // send the players object to the new player
-                // socket.emit('currentPlayers', players); when ready 
+                
                 socket.emit('currentPlayers', players);
                 // update all other players of the new player
                 socket.broadcast.emit('newPlayer', players[socket.id]);
-                socket.broadcast.emit('allPlayerInfo', players);
+                socket.broadcast.emit('allPlayerInfo', players); // emit to all others
+                socket.emit('allPlayerInfo', players); // emit to self
+
+                if(Object.keys(players).length  >= 2){ // need to create new game here
+                    
+                    text  = `update games set state = 'started' where game_id = $1;`
+                    values = [data.game_id]
+                    query(text, values, (err, result) => { // postgres database test
+                        if (err) return console.log(err)
+                        socket.broadcast.emit('startGame');
+                        socket.emit('startGame');
+                        setTimeout(function(){
+                            text  = `update games set state = 'finished' where game_id = $1;`
+                            values = [data.game_id]
+                            query(text, values, (err, result) => { // postgres database test
+                                if (err) return console.log(err)
+                                socket.broadcast.emit('endGame');
+                                socket.emit('endGame')
+                            })
+                        }, 20000)
+                    })
+                    
+                    
+                }
             })
         
             
@@ -93,7 +112,16 @@ exports = module.exports = function(io){
                     return
 
                 }
+                
                 user = result.rows[0]
+                if(user.state == "finished"){ // game finished, dont remove user from db
+                    waitingQueue.deQueue()
+                    delete players[socket.id];
+                    socket.broadcast.emit('allPlayerInfo', players);
+                    //emit a message to all players to remove this player
+                    io.emit('disconnect', socket.id);
+                    return
+                }
                 if(user.num_players - 1 == 0){
                     text = "delete from games where game_id = $1;"
                     values = [user.game_id]
@@ -111,9 +139,14 @@ exports = module.exports = function(io){
                     if (err) {
                         return console.log(err)
                     }
+
                     console.log("deleted")
+                    if(user.state == "waiting"){ // game hasnt started, remove from queue
+                        waitingQueue.deQueue()
+                    }
                     
                     delete players[socket.id];
+                    socket.broadcast.emit('allPlayerInfo', players);
                     //emit a message to all players to remove this player
                     io.emit('disconnect', socket.id);
                     
@@ -125,7 +158,7 @@ exports = module.exports = function(io){
         // when a plaayer moves, update the player data
         socket.on('playerMovement', function (movementData) {
             //sometimes this data comes in as undefined? bug with phasor.js
-            if(typeof movementData.x === 'undefined' || typeof movementData === 'undefined'){
+            if(typeof movementData.x === 'undefined' || typeof movementData.y === 'undefined'){
                 return
             }
             players[socket.id].x = movementData.x;
