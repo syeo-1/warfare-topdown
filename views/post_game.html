@@ -6,35 +6,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>Warfare Top Down Game</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/phaser@3.16.2/dist/phaser.min.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
-  
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>s  
   <link rel="stylesheet" href="./assets/css/index.css">
 </head>
 
 <body class="background-light ">
     
     <div class="container text-center">
-      <h1>WTD GAME LOBBY</h1>
+      <h1>WTD POST GAME</h1>
     
       <br>
         
           <div class="row">
-            <div class="col-4">
-              <div class="team-a"></div>
-            </div>
-            <div class="col-4">
+      
+            <div class="col-6">
               
               <ul class="list-group">
-                <ul class="list-group"><li class="list-group-item list-group-item-dark">GAME INFO</li>
+                <ul class="list-group"><li class="list-group-item list-group-item-dark">POST GAME INFO</li>
                 <li class="list-group-item">
                   <div class="row">
                     <div class="col">
                       GAME STATUS
                     </div>
                     <div class="col">
-                      <div class="timer">Waiting</div>
+                      <div class="timer">FINISHED</div>
                     </div>
                   </div>
                 </li>
@@ -61,24 +56,39 @@
                 <li class="list-group-item">
                   <div class="row">
                     <div class="col">
-                      CLOCK
+                      GAME TIME
                     </div>
                     <div class="col">
-                      <div class="clock">00:15</div>
+                      <div class="clock">0</div>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col">
+                      Team A Top Player
+                    </div>
+                    <div class="col">
+                      <div class="clock">x</div>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col">
+                      TEAM B Top Player
+                    </div>
+                    <div class="col">
+                      <div class="clock">y</div>
                     </div>
                   </div>
                 </li>
               </ul>
             </div>
-            <div class="col-4">
-              <div class="team-b"></div>
-            </div>
+            
       
           </div>
     </div>
-  <script src="assets/js/game.js" user_id=<%= user_id %> game_id=<%= game_id %>></script>
-  <script src="assets/js/lobby.js"user_id=<%= user_id %> game_id=<%= game_id %>></script>
-  
 </body>
 
 </html>

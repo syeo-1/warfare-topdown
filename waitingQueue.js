@@ -1,3 +1,6 @@
+// This file is responsible for monitoring the number of users that are waiting to play (4) max.
+// This avoids an excess amount of database queries
+
 var size = 0
 
 module.exports = {
@@ -9,6 +12,5 @@ module.exports = {
     },
     deQueue: function decrement() {
         size--;
-        
     }
 }

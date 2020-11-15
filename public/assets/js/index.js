@@ -19,7 +19,7 @@ $(document).ready(function() {
             
             success: function(response) {
                 if(response.success){
-                    window.location.href = "/lobby?game_id=" + response.game_id + "&user_id=" + response.user_id
+                    window.location.href = "/game?game_id=" + response.game_id + "&user_id=" + response.user_id
                 }
                 else{
                     $(".flash-message").html(`<div class="alert alert-danger" role="alert">`

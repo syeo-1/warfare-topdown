@@ -1,4 +1,3 @@
-const sql = require("./SQL_strings");
 const query = require("./queryPool");
 const waitingQueue = require("./waitingQueue")
 
@@ -6,11 +5,9 @@ const players = {};
 
 exports = module.exports = function(io){
     io.on('connection', function (socket) {
-        //update user in database here
-        console.log('a user connected: ', socket.id);
+        
         socket.on('new_player', function(data) {
             console.log('new player: ', socket.id);
-            console.log(data)
             text  = `select * from users where user_id = $1 and game_id = $2` // check to see if user in_game already
             values = [data.user_id, data.game_id]
             query(text, values, (err, result) => { 
@@ -23,14 +20,12 @@ exports = module.exports = function(io){
                     return
                 }
                 if(result.rows[0].in_game){ // user in game already, redirect to home page
-                    console.log("in game already")
                     var destination = '/';
                     socket.emit('redirect', destination);
                     return
                 }
                 
-                
-                
+                // assign team and starting location 
                 var team = "A"; // team A
                 var x = 50;
                 var y = 20 + (20 * Object.keys(players).length)
@@ -39,9 +34,9 @@ exports = module.exports = function(io){
                     x = 200
                     y = 20 + (20 * (Object.keys(players).length - 1))
                 }
-                console.log(team)
+            
                 
-                // create a new player ]
+                // create a new player 
                 players[socket.id] = {
                     flipX: false,
                     x: x,
@@ -52,7 +47,8 @@ exports = module.exports = function(io){
                     game_id: data.game_id,
                     username: result.rows[0].username
                 };
-                // UPDATE REQUEST TO SAVE USER IN DATABASE
+                
+                //update database that user is in game now
                 text  = `update users set team = $1, socket_id = $2, in_game = true where user_id = $3 and game_id = $4;`
                 values = [team, socket.id, data.user_id, data.game_id]
                 query(text, values, (err, result) => { 
@@ -69,7 +65,7 @@ exports = module.exports = function(io){
                 socket.broadcast.emit('allPlayerInfo', players); // emit to all others
                 socket.emit('allPlayerInfo', players); // emit to self
 
-                if(Object.keys(players).length  >= 2){ // need to create new game here
+                if(Object.keys(players).length  >= 2){ // enough players, start the game
                     
                     text  = `update games set state = 'started' where game_id = $1;`
                     values = [data.game_id]

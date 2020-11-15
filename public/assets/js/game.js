@@ -115,7 +115,7 @@ class BootScene extends Phaser.Scene {
     endGame(socket){
       socket.on('endGame', function(vars) {
         //update database here with user + game stats and then nav to game stats page
-          window.location.href = "/";
+          window.location.href = "/post_game?game_id=" + game_id + "&user_id=" + user_id;
       });
     }
   
