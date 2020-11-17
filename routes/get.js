@@ -5,8 +5,8 @@ const query = require("../queryPool");
 
 router.get('/', function (req, res) {
   // see how many open spots there are for an open game
-  text = "select * from users;";
-  values = [];
+  var text = "select * from users;";
+  var values = [];
   // query(text, values, (err, result) => { // postgres database test
   //   if (err) return res.status(500).send(err)
   //   console.log(result.rows)
@@ -17,8 +17,8 @@ router.get('/', function (req, res) {
 router.get('/game', function (req, res) {
   console.log("params")
   console.log(req.query)
-  text = "select * from users where user_id = $1 and game_id = $2";
-  values = [req.query.user_id, req.query.game_id];
+  var text = "select * from users where user_id = $1 and game_id = $2";
+  var values = [req.query.user_id, req.query.game_id];
   query(text, values, (err, result) => { // postgres database test
     if (err) return res.status(500).send(err)
     if(result.rowCount > 0){ // user and game exists, admit to lobby

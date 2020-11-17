@@ -2,6 +2,7 @@ const sql = require("./SQL_strings");
 const query = require("./queryPool");
 
 const players = {};
+const bullets = [];
 
 exports = module.exports = function(io){
     io.on('connection', function (socket) {
@@ -10,8 +11,8 @@ exports = module.exports = function(io){
                 
             console.log('a user connected: ', socket.id);
             console.log(data)
-            text  = `select * from users where user_id = $1 and game_id = $2` // check to see if user in_game already
-            values = [data.user_id, data.game_id]
+            var text  = `select * from users where user_id = $1 and game_id = $2` // check to see if user in_game already
+            var values = [data.user_id, data.game_id]
             query(text, values, (err, result) => { 
                 if (err) {
                     return console.log(err)
@@ -70,8 +71,8 @@ exports = module.exports = function(io){
         // when a player disconnects, remove them from our players object
         socket.on('disconnect', function () {
             console.log('user disconnected: ', socket.id);
-            text = "select * from users inner join games on users.game_id = games.game_id where socket_id = $1"
-            values = [socket.id]
+            var text = "select * from users inner join games on users.game_id = games.game_id where socket_id = $1"
+            var values = [socket.id]
             query(text, values, (err, result) => { // postgres database test
                 if (err) {
                     console.log(err)
@@ -84,7 +85,7 @@ exports = module.exports = function(io){
                     return
 
                 }
-                user = result.rows[0]
+                var user = result.rows[0]
                 if(user.num_players - 1 == 0){
                     text = "delete from games where game_id = $1;"
                     values = [user.game_id]
@@ -125,5 +126,18 @@ exports = module.exports = function(io){
             // emit a message to all players about the player that moved
             socket.broadcast.emit('playerMoved', players[socket.id]);
         });
+
+        // UNCOMMENT THE BELOW ONCE CLIENT CAN SHOOT BULLETS (SINGLE CLIENT INSTANCE)
+
+        //// when a player shoots, update player information
+        // socket.on('playerShooting', function(shootingData) {
+        //     if (players[socket.id] == undefined) {
+        //         return false;
+        //     }
+        //     let shot_bullet = shootingData;
+        //     shootingData.owner_id = socket.id;
+        //     bullets.push(shot_bullet);
+        // });
+
     });
 }
