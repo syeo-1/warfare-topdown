@@ -31,7 +31,9 @@ router.get('/game', function (req, res) {
 
 
 router.get('/post_game', function (req, res) {
-  text = "select * from users inner join games on users.game_id = games.game_id where game_id = $1 and state = 'finished';"
+  console.log("postGame")
+  console.log(req.query)
+  text = "select * from users inner join games on users.game_id = games.game_id where games.game_id = $1 and state = 'finished';"
   values = [req.query.game_id];
   query(text, values, (err, result) => { // postgres database test
     if (err) return res.status(500).send(err)

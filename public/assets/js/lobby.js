@@ -4,7 +4,7 @@ start = false
 var id = null;
 var count = 5;
 var countDownTimer = function(){
-     if(count >= 0 ) {
+     if(count > 0 ) {
           
           $(".timer").html(`Starting in: ${count}`)
           count--;
@@ -12,6 +12,7 @@ var countDownTimer = function(){
         $(".timer").html(`Started`)
           clearInterval(id);
           count = 15
+          $(".timer").html(`Starting in: 0`)
           $(".clock").html(`00:${count}`)
           count--
           id = setInterval(clock, 1000);
@@ -21,8 +22,13 @@ var countDownTimer = function(){
 
 var clock = function(){
     if(count >= 0 ) {
+         if(count < 10){
+            $(".clock").html(`00:0${count}`)
+         }
+         else{
+            $(".clock").html(`00:${count}`)
+         }
          
-         $(".clock").html(`00:${count}`)
          count--;
     } else {
          clearInterval(id);

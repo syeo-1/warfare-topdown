@@ -112,6 +112,7 @@ exports = module.exports = function(io){
                 user = result.rows[0]
                 if(user.state == "finished"){ // game finished, dont remove user from db
                     waitingQueue.deQueue()
+                    console.log("finished")
                     delete players[socket.id];
                     socket.broadcast.emit('allPlayerInfo', players);
                     //emit a message to all players to remove this player
