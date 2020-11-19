@@ -129,15 +129,36 @@ exports = module.exports = function(io){
 
         // UNCOMMENT THE BELOW ONCE CLIENT CAN SHOOT BULLETS (SINGLE CLIENT INSTANCE)
 
-        //// when a player shoots, update player information
-        // socket.on('playerShooting', function(shootingData) {
-        //     if (players[socket.id] == undefined) {
-        //         return false;
-        //     }
-        //     let shot_bullet = shootingData;
-        //     shootingData.owner_id = socket.id;
-        //     bullets.push(shot_bullet);
-        // });
+        // when a player shoots, update bullet information
+        socket.on('playerShooting', function(shootingData) {
+            let projectile = shootingData;
+            shootingData.player = socket.id;
+            bullets.push(projectile);
+        });
 
     });
+}
+
+function check_proj_collisions() {
+    // update all projectile information in map
+    for (let i = 0 ; i < projectiles.length ; i++) {
+        // re-render each bullet based on its speed
+        let cur_projectile = projectiles[i];
+        cur_projectile.sprite.x += cur_projectile.x_velo; 
+        cur_projectile.sprite.y += cur_projectile.y_velo; 
+   
+        // remove the bullet if it has traveled for 0.75 seconds (750ms) or it's at boundaries of the map
+        let date = new Date();
+        let cur_time = date.getTime();
+        // console.log("curtime: " + cur_time.toString());
+        let destroy_time = cur_time-cur_projectile.fire_time;
+        if (destroy_time >= 750 || 
+         cur_projectile.sprite.x <= 0 || cur_projectile.sprite.x >= 480 ||
+         cur_projectile.sprite.y <= 0 || cur_projectile.sprite.y >= 480) {
+          //  console.log(destroy_time);
+           cur_projectile.sprite.destroy();
+           projectiles.splice(i,1);
+           i--;
+        }
+    }
 }

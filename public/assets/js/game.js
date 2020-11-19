@@ -102,6 +102,24 @@ class WorldScene extends Phaser.Scene {
       }.bind(this));
     }.bind(this));
 
+    // wait for projectile updates from players
+    this.socket.on('updateProjectiles', function(server_projectiles) {
+      // create projectiles. must keep in sync with server
+      for (let i = 0 ; i < server_projectiles.length ; i++) { // not enough
+        if (projectiles[i] == undefined) {
+          projectiles[i] = this.add.sprite(server_projectiles[i].x, server_projectiles[i].y, 'small_projectile');
+        } else {
+          projectiles[i].x = server_projectiles[i].x;
+          projectiles[i].y = server_projectiles[i].y;
+        }
+      }
+      // too many. delete excess
+      for (let i = server_projectiles.length ; i < projectiles.length ; i++) {
+        projectiles[i].destroy();
+        projectiles.splice(i,1);
+        i--;
+      }
+    })
     
   }
 
@@ -316,22 +334,28 @@ class WorldScene extends Phaser.Scene {
           // console.log("x velocity is: "+ x_velo);
           // console.log("y velocity is: "+ y_velo);
 
-          // create the projectile with the proper velocity and display in the map/canvas
-          let projectile = {};
-          projectile.x_velo = x_velo;
-          projectile.y_velo = y_velo;
+          // // create the projectile with the proper velocity and display in the map/canvas
+          // let projectile = {};
+          // projectile.x_velo = x_velo;
+          // projectile.y_velo = y_velo;
           
           // store time projectile was created so know when to remove projectile
           let date = new Date();// for ensuring projectile has limited range
           projectile.fire_time = date.getTime();
           // console.log("firetime: " + projectile.fire_time.toString());
-          projectile.sprite = this.add.sprite(
-            this.container.x + projectile.x_velo,
-            this.container.y + projectile.y_velo,
-            'small_projectile'
-          );
-          // add to projectile array
-          projectiles.push(projectile);
+          // projectile.sprite = this.add.sprite(
+          //   this.container.x + projectile.x_velo,
+          //   this.container.y + projectile.y_velo,
+          //   'small_projectile'
+          // );
+          // // add to projectile array
+          // projectiles.push(projectile);
+          this.socket.emit('playerShooting', {
+            x: this.container.x,
+            y: this.container.y,
+            x_velo: x_velo,
+            y_velo: y_velo
+          })
           this.shooting = true;
 
         }
@@ -342,27 +366,7 @@ class WorldScene extends Phaser.Scene {
         this.shooting = false;
       }
 
-      // update all projectile information in map
-      for (let i = 0 ; i < projectiles.length ; i++) {
-        // re-render each bullet based on its speed
-        let cur_projectile = projectiles[i];
-        cur_projectile.sprite.x += cur_projectile.x_velo; 
-        cur_projectile.sprite.y += cur_projectile.y_velo; 
-   
-        // remove the bullet if it has traveled for 1.5 seconds (1500ms) or it's at boundaries of the map
-        let date = new Date();
-        let cur_time = date.getTime();
-        // console.log("curtime: " + cur_time.toString());
-        let destroy_time = cur_time-cur_projectile.fire_time;
-        if (destroy_time >= 750 || 
-         cur_projectile.sprite.x <= 0 || cur_projectile.sprite.x >= 480 ||
-         cur_projectile.sprite.y <= 0 || cur_projectile.sprite.y >= 480) {
-          //  console.log(destroy_time);
-           cur_projectile.sprite.destroy();
-           projectiles.splice(i,1);
-           i--;
-        }
-      }
+      
 
       // Horizontal movement
       if (this.cursors.left.isDown) {
@@ -409,27 +413,6 @@ class WorldScene extends Phaser.Scene {
     }
   }
 }
-
-// the update in world scene is called before this function which displays the bullets
-// ie. the action of shooting is done before bullets are displayed, so it's okay
-// function update_projectiles() {
-//    for (let i = 0 ; i < projectiles.length ; i++) {
-//      // re-render each bullet based on its speed
-//      let cur_projectile = projectiles[i];
-//      cur_projectile.sprite.x += cur_projectile.x_velo; 
-//      cur_projectile.sprite.y += cur_projectile.y_velo; 
-
-//      // remove the bullet if it has traveled for 1.5 seconds (1500ms) or it's at boundaries of the map
-//      let cur_time = date.getTime();
-//      if (cur_time - cur_projectile.fire_time >= 1500 || 
-//       cur_projectile.sprite.x <= 0 || cur_projectile.sprite.x >= 480 ||
-//       cur_projectile.sprite.y <= 0 || cur_projectile.sprite.y >= 480) {
-//         cur_projectile.sprite.destroy();
-//         projectiles.splice(i,1);
-//         i--;
-//      }
-//    }
-// }
   
 let config = {
   type: Phaser.AUTO,
