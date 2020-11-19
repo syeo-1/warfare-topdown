@@ -17,14 +17,10 @@ exports = module.exports = function(io){
                 if (err) {
                     return console.log(err)
                 }
-                if(result.rows[0].in_game){ // user in game already, redirect to home page
-                    var destination = '/';
-                    socket.emit('redirect', destination);
-                    return
-                }
                 
                 
-                if(Object.keys(players).length  >= 8){ // need to create new game here
+                
+                if(Object.keys(players).length  >= 4){ // need to create new game here
                     // need to create new game here
                     var destination = '/';
                     socket.emit('redirect', destination);
@@ -50,14 +46,7 @@ exports = module.exports = function(io){
                     user_id: data.user_id,
                     game_id: data.game_id
                 };
-                // UPDATE REQUEST TO SAVE USER IN DATABASE
-                text  = `update users set team = $1, socket_id = $2, in_game = true where user_id = $3 and game_id = $4;`
-                values = [team, socket.id, data.user_id, data.game_id]
-                query(text, values, (err, result) => { // postgres database test
-                    if (err) {
-                        return console.log(err)
-                    }
-                })
+                
 
                 // send the players object to the new player
                 socket.emit('currentPlayers', players);

@@ -10,7 +10,7 @@ router.get('/', function (req, res) {
   // query(text, values, (err, result) => { // postgres database test
   //   if (err) return res.status(500).send(err)
   //   console.log(result.rows)
-    res.render('./index.html', { root: null});
+  res.render('./game.html', { user_id: 1, game_id: 1});
   // })  
 });
 
