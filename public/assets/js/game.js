@@ -114,6 +114,7 @@ class WorldScene extends Phaser.Scene {
     // wait for projectile updates from players
     this.socket.on('updateProjectiles', function(server_projectiles) {
       // create projectiles. must keep in sync with server
+      // console.log("client updated by server")
       for (let i = 0 ; i < server_projectiles.length ; i++) { // not enough
         if (projectiles[i] == undefined) {
           projectiles[i] = this.add.sprite(server_projectiles[i].x, server_projectiles[i].y, 'small_projectile');
@@ -128,7 +129,21 @@ class WorldScene extends Phaser.Scene {
         projectiles.splice(i,1);
         i--;
       }
-    })
+    }.bind(this));
+
+    // wait for projectile hits from players
+    this.socket.on('playerDamaged', function(player_id) {
+      if (player_id == this.socket.id) {
+        // console.log("I've been damaged!!!");
+
+        // respawn at your original spawn location
+        console.log("spawned in original location");
+      } else {
+        // console.log("Some other player has been damaged!!")
+
+        // spawn the other player instance at their original spawn location
+      }
+    }.bind(this));
     
   }
 
@@ -369,7 +384,7 @@ addOtherPlayers(playerInfo) {
           
           // store time projectile was created so know when to remove projectile
           let date = new Date();// for ensuring projectile has limited range
-          projectile.fire_time = date.getTime();
+          let fire_time = date.getTime();
           // console.log("firetime: " + projectile.fire_time.toString());
           // projectile.sprite = this.add.sprite(
           //   this.container.x + projectile.x_velo,
@@ -382,8 +397,10 @@ addOtherPlayers(playerInfo) {
             x: this.container.x,
             y: this.container.y,
             x_velo: x_velo,
-            y_velo: y_velo
+            y_velo: y_velo,
+            fire_time: fire_time
           })
+          // console.log("bullet has been shot");
           this.shooting = true;
 
         }
