@@ -20,16 +20,19 @@ exports = module.exports = function(io){
                 if (err) {
                     return console.log(err)
                 }
-                if(result.rowCount == 0){
+                if(result.rowCount == 0 && data.user_id != -1){
                     var destination = '/';
                     socket.emit('redirect', destination);
                     return
                 }
-                if(result.rows[0].in_game){ // user in game already, redirect to home page
-                    var destination = '/';
-                    socket.emit('redirect', destination);
-                    return
+                if(data.user_id != -1){
+                    if(result.rows[0].in_game){ // user in game already, redirect to home page
+                        var destination = '/';
+                        socket.emit('redirect', destination);
+                        return
+                    }
                 }
+                
                 
                 // assign team and starting location 
                 var team = "A"; // team A

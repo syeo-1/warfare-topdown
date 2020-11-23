@@ -490,7 +490,7 @@ addOtherPlayers(playerInfo) {
   
 let config = {
   type: Phaser.AUTO,
-  parent: 'content',
+  parent: 'phasor',
   width: 320,
   height: 240,
   autoCenter: true,
