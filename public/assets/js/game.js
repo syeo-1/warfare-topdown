@@ -131,17 +131,46 @@ class WorldScene extends Phaser.Scene {
       }
     }.bind(this));
 
-    // wait for projectile hits from players
-    this.socket.on('playerDamaged', function(player_id) {
-      if (player_id == this.socket.id) {
-        // console.log("I've been damaged!!!");
 
-        // respawn at your original spawn location
-        console.log("spawned in original location");
+    
+
+    // wait for projectile hits from players
+    this.socket.on('playerDamaged', function(playerInfo) {
+      
+
+    
+      console.log(playerInfo.playerId)
+      
+      if (playerInfo.playerId == this.socket.id) {
+        
+        this.container.x = playerInfo.respawn_x;
+        this.container.y = playerInfo.respawn_y;
+       
+        //this.updateCamera()
+        
+
+        // console.log("spawned in original location");
       } else {
         // console.log("Some other player has been damaged!!")
 
-        // spawn the other player instance at their original spawn location
+        // relocate the other player to their spawn location
+        this.otherPlayers.getChildren().forEach(function (player) {
+          console.log("unf")
+          console.log(player.playerId)
+          if (playerInfo.playerId === player.playerId) {
+            // player.x = player.respawn_x;
+            // player.y = player.respawn_y;
+            
+            
+            player.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
+            
+            
+            // console.log(player.respawn_x);
+            // console.log(player.respawn_y);
+          }
+        }.bind(this));
+        console.log("other player spawned to original location");
+
       }
     }.bind(this));
     
