@@ -122,22 +122,22 @@ class WorldScene extends Phaser.Scene {
       }
     }.bind(this));
 
-    // wait for projectile hits from players
-    this.socket.on('playerDamaged', function(player_id) {
-      if (player_id == this.socket.id) {
 
-        // relocate the player to their spawn location
-        this.otherPlayers.getChildren().forEach(function (player) {
-          if (player_id === player.playerId) {
-            // player.x = player.respawn_x;
-            // player.y = player.respawn_y;
-            console.log(player);
-            // console.log(player.respawn_x);
-            // console.log(player.respawn_y);
-            player.setPosition(player.respawn_x, player.respawn_y);
-          }
-        }.bind(this));
-        console.log("this player spawned to original location")
+    
+
+    // wait for projectile hits from players
+    this.socket.on('playerDamaged', function(playerInfo) {
+      
+
+    
+      console.log(playerInfo.playerId)
+      
+      if (playerInfo.playerId == this.socket.id) {
+        
+        this.container.x = playerInfo.respawn_x;
+        this.container.y = playerInfo.respawn_y;
+       
+        //this.updateCamera()
         
 
         // console.log("spawned in original location");
@@ -146,11 +146,16 @@ class WorldScene extends Phaser.Scene {
 
         // relocate the other player to their spawn location
         this.otherPlayers.getChildren().forEach(function (player) {
-          if (player_id === player.playerId) {
+          console.log("unf")
+          console.log(player.playerId)
+          if (playerInfo.playerId === player.playerId) {
             // player.x = player.respawn_x;
             // player.y = player.respawn_y;
-            player.setPosition(player.respawn_x, player.respawn_y);
-            console.log(player);
+            
+            
+            player.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
+            
+            
             // console.log(player.respawn_x);
             // console.log(player.respawn_y);
           }

@@ -160,7 +160,7 @@ exports = module.exports = function(io){
                     let scaler_dist = Math.sqrt((player_to_bullet_x ** 2) + (player_to_bullet_y ** 2));
                     // console.log(scaler_dist);
                     if (scaler_dist < 10) {
-                        io.emit('playerDamaged', player_id);
+                        io.emit('playerDamaged', players[player_id]);
                         player_damaged = true;
                     }
                 }
