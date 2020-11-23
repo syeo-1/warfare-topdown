@@ -55,6 +55,7 @@ class WorldScene extends Phaser.Scene {
 
 
     this.redirect(this.socket);
+    this.endGame(this.socket);
 
     // create map
     this.createMap();
@@ -137,6 +138,13 @@ class WorldScene extends Phaser.Scene {
     });
   }
 
+  endGame(socket){
+    socket.on('endGame', function(vars) {
+      //update database here with user + game stats and then nav to game stats page
+        window.location.href = "/post_game?game_id=" + game_id + "&user_id=" + user_id;
+    });
+  }
+
   createMap() {
     // create the map
     this.map = this.make.tilemap({
@@ -195,33 +203,45 @@ class WorldScene extends Phaser.Scene {
     });
   }
 
-  createPlayer(playerInfo) {
-    // our player sprite created through the physics system
-    this.player = this.add.sprite(0, 0, 'player', 6);
-
-    this.container = this.add.container(playerInfo.x, playerInfo.y);
-    this.container.setSize(16, 16);
-    this.physics.world.enable(this.container);
-    this.container.add(this.player);
-
-    // add bool to indicate whether or not player is in a shooting state
-    this.shooting = false;
-
-    // update camera
-    this.updateCamera();
-
-    // don't go out of the map
-    this.container.body.setCollideWorldBounds(true);
-
-    this.physics.add.collider(this.container, this.spawns);
+ 
+createPlayer(playerInfo) {
+  // our player sprite created through the physics system
+  this.player = this.add.sprite(0, 0, 'player', 6);
+  if(playerInfo.team == 'A'){
+    this.player.setTint(0x0000FF);
+  }
+  else{
+    this.player.setTint(0xFF0000);
   }
 
-  addOtherPlayers(playerInfo) {
-    const otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'player', 9);
-    otherPlayer.setTint(Math.random() * 0xffffff);
-    otherPlayer.playerId = playerInfo.playerId;
-    this.otherPlayers.add(otherPlayer);
+  this.container = this.add.container(playerInfo.x, playerInfo.y);
+  this.container.setSize(16, 16);
+  this.physics.world.enable(this.container);
+  this.container.add(this.player);
+
+  // update camera
+  this.updateCamera();
+
+  // don't go out of the map
+  this.container.body.setCollideWorldBounds(true);
+
+  this.physics.add.collider(this.container, this.spawns);
+}
+
+
+addOtherPlayers(playerInfo) {
+  const otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'player', 9);
+  if(playerInfo.team == 'A'){
+    otherPlayer.setTint(0x0000FF);
   }
+  else{
+    otherPlayer.setTint(0xFF0000);
+  }
+  
+  otherPlayer.playerId = playerInfo.playerId;
+  this.otherPlayers.add(otherPlayer);
+}
+
 
   updateCamera() {
     // limit camera to map
@@ -276,7 +296,7 @@ class WorldScene extends Phaser.Scene {
 
 
   update() {
-    if (this.container && this.gameStarted) {
+    if (this.container && gameStarted) {
       this.container.body.setVelocity(0);
 
       // shooting
