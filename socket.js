@@ -44,6 +44,8 @@ exports = module.exports = function(io){
                 // create a new player and add it to Team A 
                 players[socket.id] = {
                     flipX: false,
+                    respawn_x: x,
+                    respawn_y: y,
                     x: x,
                     y: y, // spread out new users
                     playerId: socket.id,
