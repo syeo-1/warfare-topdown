@@ -1,8 +1,13 @@
 const sql = require("./SQL_strings");
 const query = require("./queryPool");
 
+// const express = require('express');
+// const app = express();
+// const http = require('http').Server(app);
+// const server_io = require('socket.io')(http);
+
 const players = {};
-const bullets = [];
+const projectiles = [];
 
 exports = module.exports = function(io){
     io.on('connection', function (socket) {
@@ -54,7 +59,6 @@ exports = module.exports = function(io){
                 socket.broadcast.emit('newPlayer', players[socket.id]);
             })
         
-            
             
         });
         // when a player disconnects, remove them from our players object
@@ -118,36 +122,100 @@ exports = module.exports = function(io){
 
         // UNCOMMENT THE BELOW ONCE CLIENT CAN SHOOT BULLETS (SINGLE CLIENT INSTANCE)
 
-        // when a player shoots, update bullet information
+        // when a player shoots, update projectile array info
         socket.on('playerShooting', function(shootingData) {
+            if (players[socket.id] == undefined) {
+                console.log("player id undefined");
+                return;
+            }
+            // console.log("bullet received");
+            // console.log(shootingData);
             let projectile = shootingData;
-            shootingData.player = socket.id;
-            bullets.push(projectile);
+            shootingData.player = socket.id;// to ensure player shooting bullet isn't damaged by own bullet
+            projectiles.push(projectile);
         });
 
+
+
     });
+    function check_proj_collisions() {
+        // update all projectile information in map
+        // console.log("hello world");
+        for (let i = 0 ; i < projectiles.length ; i++) {
+            // console.log(projectiles[i]);
+            // re-render each bullet based on its speed
+            let cur_projectile = projectiles[i];
+            cur_projectile.x += cur_projectile.x_velo; 
+            cur_projectile.y += cur_projectile.y_velo;
+
+            let player_damaged = false;
+
+            for (let player_id in players) {
+                if (cur_projectile.player != player_id) {
+                    let player_to_bullet_x = players[player_id].x - cur_projectile.x;
+                    let player_to_bullet_y = players[player_id].y - cur_projectile.y;
+
+                    let scaler_dist = Math.sqrt((player_to_bullet_x ** 2) + (player_to_bullet_y ** 2));
+                    // console.log(scaler_dist);
+                    if (scaler_dist < 10) {
+                        io.emit('playerDamaged', player_id);
+                        player_damaged = true;
+                    }
+                }
+            }
+       
+            // remove the bullet if it has traveled for 0.75 seconds (750ms) or it's at boundaries of the map
+            // or... the bullet has hit a person
+            let date = new Date();
+            let cur_time = date.getTime();
+            // console.log("curtime: " + cur_time.toString());
+            let destroy_time = cur_time-cur_projectile.fire_time;
+            if (destroy_time >= 750 || 
+             cur_projectile.x <= 0 || cur_projectile.x >= 480 ||
+             cur_projectile.y <= 0 || cur_projectile.y >= 480 ||
+             player_damaged) {
+               //  console.log(destroy_time);
+               //    cur_projectile.sprite.destroy();
+               projectiles.splice(i,1);
+               i--;
+            }
+        }
+        // console.log("poop");
+        io.emit('updateProjectiles', projectiles);
+        // console.log("stinky")
+    }
+
+    setInterval(check_proj_collisions, 16);
+
 }
 
-function check_proj_collisions() {
-    // update all projectile information in map
-    for (let i = 0 ; i < projectiles.length ; i++) {
-        // re-render each bullet based on its speed
-        let cur_projectile = projectiles[i];
-        cur_projectile.sprite.x += cur_projectile.x_velo; 
-        cur_projectile.sprite.y += cur_projectile.y_velo; 
+// function check_proj_collisions() {
+//     // update all projectile information in map
+//     // console.log("hello world");
+//     for (let i = 0 ; i < projectiles.length ; i++) {
+//         // console.log(projectiles[i]);
+//         // re-render each bullet based on its speed
+//         let cur_projectile = projectiles[i];
+//         cur_projectile.x += cur_projectile.x_velo; 
+//         cur_projectile.y += cur_projectile.y_velo;
    
-        // remove the bullet if it has traveled for 0.75 seconds (750ms) or it's at boundaries of the map
-        let date = new Date();
-        let cur_time = date.getTime();
-        // console.log("curtime: " + cur_time.toString());
-        let destroy_time = cur_time-cur_projectile.fire_time;
-        if (destroy_time >= 750 || 
-         cur_projectile.sprite.x <= 0 || cur_projectile.sprite.x >= 480 ||
-         cur_projectile.sprite.y <= 0 || cur_projectile.sprite.y >= 480) {
-          //  console.log(destroy_time);
-           cur_projectile.sprite.destroy();
-           projectiles.splice(i,1);
-           i--;
-        }
-    }
-}
+//         // remove the bullet if it has traveled for 0.75 seconds (750ms) or it's at boundaries of the map
+//         let date = new Date();
+//         let cur_time = date.getTime();
+//         // console.log("curtime: " + cur_time.toString());
+//         let destroy_time = cur_time-cur_projectile.fire_time;
+//         if (destroy_time >= 750 || 
+//          cur_projectile.x <= 0 || cur_projectile.x >= 480 ||
+//          cur_projectile.y <= 0 || cur_projectile.y >= 480) {
+//            //  console.log(destroy_time);
+//            //    cur_projectile.sprite.destroy();
+//            projectiles.splice(i,1);
+//            i--;
+//         }
+//     }
+//     console.log("poop");
+//     server_io.emit('updateProjectiles', projectiles);
+//     console.log("stinky")
+// }
+
+// setInterval(check_proj_collisions, 16);
