@@ -147,6 +147,7 @@ exports = module.exports = function(io){
             // console.log(projectiles[i]);
             // re-render each bullet based on its speed
             let cur_projectile = projectiles[i];
+            
             cur_projectile.x += cur_projectile.x_velo; 
             cur_projectile.y += cur_projectile.y_velo;
 
@@ -160,7 +161,12 @@ exports = module.exports = function(io){
                     let scaler_dist = Math.sqrt((player_to_bullet_x ** 2) + (player_to_bullet_y ** 2));
                     // console.log(scaler_dist);
                     if (scaler_dist < 10) {
+                        killData = {
+                            'shooter': players[cur_projectile.player],
+                            'killed': players[player_id]
+                        }
                         io.emit('playerDamaged', players[player_id]);
+                        io.emit('updateLeaderBoard', killData)
                         player_damaged = true;
                     }
                 }
