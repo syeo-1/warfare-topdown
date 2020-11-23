@@ -2,6 +2,7 @@ let user_id = document.currentScript.getAttribute("user_id")
 let game_id = document.currentScript.getAttribute("game_id")
 
 let projectiles = [];// store projectiles in array client side for now
+var gameStarted = false;
 
 
 class BootScene extends Phaser.Scene {
@@ -68,6 +69,13 @@ class WorldScene extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.cursors = this.input.keyboard.addKeys({up:Phaser.Input.Keyboard.KeyCodes.W, down:Phaser.Input.Keyboard.KeyCodes.S, left:Phaser.Input.Keyboard.KeyCodes.A, right:Phaser.Input.Keyboard.KeyCodes.D});
 
+    this.socket.on('startGame', function () {
+      setTimeout(function(){
+        gameStarted = true;
+      }, 5000)
+      
+      
+    }.bind(this))
     // create enemies
     //this.createEnemies();
     // listen for web socket events
@@ -268,7 +276,7 @@ class WorldScene extends Phaser.Scene {
 
 
   update() {
-    if (this.container) {
+    if (this.container && this.gameStarted) {
       this.container.body.setVelocity(0);
 
       // shooting

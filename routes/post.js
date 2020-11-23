@@ -1,11 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const query = require("../queryPool");
+const waitingQueue = require("../waitingQueue")
 
 router.post('/add_new_user', function (req, res) {
+    var size = waitingQueue.getSize()
+    if(size >= 2){
+        return res.status(200).send({success: false, error: "Waiting Queue Full, Please come back later."})
+    }
+    
     text = `begin;
     select * from users where username = '${req.body.username}';
-    select * from games where num_players <= 7;
+    select * from games where num_players <= 4 and state = 'waiting';
     end;`;
     values = [];
     console.log(req.body.username)
@@ -63,7 +69,7 @@ router.post('/add_new_user', function (req, res) {
                         console.log(err)
                         return res.status(500).send(err)
                     }
-                    // num_players = result.rows[0].num_players + 1
+                    waitingQueue.enQueue(user_id);
                     res.status(200).send({success: true, error: "", game_id: game_id, user_id: user_id})
                 }) 
             })  
