@@ -1,6 +1,10 @@
-user_id = document.currentScript.getAttribute("user_id")
-game_id = document.currentScript.getAttribute("game_id");;
+let user_id = document.currentScript.getAttribute("user_id")
+let game_id = document.currentScript.getAttribute("game_id")
+
+let projectiles = [];// store projectiles in array client side for now
 var gameStarted = false;
+
+
 class BootScene extends Phaser.Scene {
     constructor() {
       super({
@@ -26,26 +30,28 @@ class BootScene extends Phaser.Scene {
       this.load.image('worm', 'assets/images/giant-worm.png');
       this.load.image('wolf', 'assets/images/wolf.png');
       this.load.image('sword', 'assets/images/attack-icon.png');
+
+      // load small projectile image
+      this.load.image('small_projectile', 'assets/images/small_projectile.png');
     }
   
     create() {
       this.scene.start('WorldScene');
     }
+}
+  
+class WorldScene extends Phaser.Scene {
+  constructor() {
+    super({
+      key: 'WorldScene'
+    });
   }
-  
-  class WorldScene extends Phaser.Scene {
-    constructor() {
-      super({
-        key: 'WorldScene'
-      });
-    }
-  
-    create() {
-      this.socket = io();
-      var data = {user_id: user_id, game_id: game_id}
-      this.socket.emit("new_player", data)
-      this.otherPlayers = this.physics.add.group();
 
+  create() {
+    this.socket = io();
+    let data = {user_id: user_id, game_id: game_id}
+    this.socket.emit("new_player", data)
+    this.otherPlayers = this.physics.add.group();
 
       this.redirect(this.socket);
       this.endGame(this.socket);
@@ -83,30 +89,51 @@ class BootScene extends Phaser.Scene {
         }.bind(this));
       }.bind(this));
     
-      this.socket.on('newPlayer', function (playerInfo) {
-        this.addOtherPlayers(playerInfo);
-      }.bind(this))
 
-      this.socket.on('disconnect', function (playerId) {
-        this.otherPlayers.getChildren().forEach(function (player) {
-          if (playerId === player.playerId) {
-            player.destroy();
-          }
-        }.bind(this));
-      }.bind(this));
 
-      this.socket.on('playerMoved', function (playerInfo) {
-        this.otherPlayers.getChildren().forEach(function (player) {
-          if (playerInfo.playerId === player.playerId) {
-            player.flipX = playerInfo.flipX;
-            player.setPosition(playerInfo.x, playerInfo.y);
-          }
-        }.bind(this));
+    this.socket.on('playerMoved', function (playerInfo) {
+      this.otherPlayers.getChildren().forEach(function (player) {
+        if (playerInfo.playerId === player.playerId) {
+          player.flipX = playerInfo.flipX;
+          player.setPosition(playerInfo.x, playerInfo.y);
+        }
       }.bind(this));
+    }.bind(this));
+
+    // wait for projectile updates from players
+    this.socket.on('updateProjectiles', function(server_projectiles) {
+      // create projectiles. must keep in sync with server
+      for (let i = 0 ; i < server_projectiles.length ; i++) { // not enough
+        if (projectiles[i] == undefined) {
+          projectiles[i] = this.add.sprite(server_projectiles[i].x, server_projectiles[i].y, 'small_projectile');
+        } else {
+          projectiles[i].x = server_projectiles[i].x;
+          projectiles[i].y = server_projectiles[i].y;
+        }
+      }
+      // too many. delete excess
+      for (let i = server_projectiles.length ; i < projectiles.length ; i++) {
+        projectiles[i].destroy();
+        projectiles.splice(i,1);
+        i--;
+      }
+    })
+
+
   
-      
-    }
+  
+    this.socket.on('newPlayer', function (playerInfo) {
+      this.addOtherPlayers(playerInfo);
+    }.bind(this))
 
+    this.socket.on('disconnect', function (playerId) {
+      this.otherPlayers.getChildren().forEach(function (player) {
+        if (playerId === player.playerId) {
+          player.destroy();
+        }
+      }.bind(this));
+    }.bind(this));
+  }
     redirect(socket){
       socket.on('redirect', function(destination) {
           window.location.href = destination;
@@ -263,80 +290,200 @@ class BootScene extends Phaser.Scene {
       zone.x = Phaser.Math.RND.between(0, this.physics.world.bounds.width);
       zone.y = Phaser.Math.RND.between(0, this.physics.world.bounds.height);
     }
-  
-    update() {
-      if (this.container && gameStarted) {
-        this.container.body.setVelocity(0);
-  
-        // Horizontal movement
-        if (this.cursors.left.isDown) {
-          this.container.body.setVelocityX(-80);
-        } else if (this.cursors.right.isDown) {
-          this.container.body.setVelocityX(80);
-        }
-  
-        // Vertical movement
-        if (this.cursors.up.isDown) {
-          this.container.body.setVelocityY(-80);
-        } else if (this.cursors.down.isDown) {
-          this.container.body.setVelocityY(80);
-        }
-  
-        // Update the animation last and give left/right animations precedence over up/down animations
-        if (this.cursors.left.isDown) {
-          this.player.anims.play('left', true);
-          this.player.flipX = true;
-        } else if (this.cursors.right.isDown) {
-          this.player.anims.play('right', true);
-          this.player.flipX = false;
-        } else if (this.cursors.up.isDown) {
-          this.player.anims.play('up', true);
-        } else if (this.cursors.down.isDown) {
-          this.player.anims.play('down', true);
-        } else {
-          this.player.anims.stop();
-        }
+       
 
-        // emit player movement
-        var x = this.container.x;
-        var y = this.container.y;
-        var flipX = this.player.flipX;
-        if (this.container.oldPosition && (x !== this.container.oldPosition.x || y !== this.container.oldPosition.y || flipX !== this.container.oldPosition.flipX)) {
-          this.socket.emit('playerMovement', { x, y, flipX });
+    
+  
+
+  onMeetEnemy(player, zone) {
+    // we move the zone to some other location
+    zone.x = Phaser.Math.RND.between(0, this.physics.world.bounds.width);
+    zone.y = Phaser.Math.RND.between(0, this.physics.world.bounds.height);
+  }
+
+
+  update() {
+    if (this.container) {
+      this.container.body.setVelocity(0);
+
+      // shooting
+      if (this.input.mousePointer.isDown && !this.shooting) {
+        // console.log("mouse click is registering");
+        
+        
+        // get player's canvas location
+        let player_canvas_location_x = this.container.x - this.cameras.main.scrollX;
+        let player_canvas_location_y = this.container.y - this.cameras.main.scrollY;
+        // console.log("player canvas x: " + player_canvas_location_x);
+        // console.log("player canvas y: " + player_canvas_location_y);
+
+        // // get the mouse click location in canvas
+        let mouse_x = this.input.mousePointer.x;
+        let mouse_y = this.input.mousePointer.y;
+
+        // only do things if the click is within the canvas area
+        if ((mouse_x >= 0 && mouse_x <= 320) && (mouse_y >= 0 && mouse_y <= 240)) {
+          // console.log("mouse location x: "+mouse_x)
+          // console.log("mouse location y: "+mouse_y)
+
+          let relative_click_x = mouse_x - player_canvas_location_x;
+          let relative_click_y = mouse_y - player_canvas_location_y;
+
+          // console.log("relative click location x: "+relative_click_x)
+          // console.log("relative click location y: "+relative_click_y)
+
+          //LINES DIRECTLY BELOW ARE SUPER IMPORTANT
+          if (relative_click_x === 0) { // prevent zero division error for arctan calculation
+            relative_click_x = Number.MIN_VALUE;
+          }
+          let theta = Math.atan(relative_click_y / relative_click_x); // is correct if you click in quadrant 1
+
+          // determine the actual radian value based on quadrant the relative mouse click is in
+          // use game coord system (clockwise, starting at bottom right quadrant)
+          // Q3 | Q4
+          //____|____
+          //    |
+          // Q2 | Q1
+          if (relative_click_x < 0 && relative_click_y > 0) { // inside quadrant 2
+            theta += Math.PI;
+          } else if (relative_click_x < 0 && relative_click_y < 0) { // inside quadrant 3
+            theta += Math.PI;
+          } else if (relative_click_x > 0 && relative_click_y < 0) { // inside quadrant 4
+            theta += 2*Math.PI;
+          } else if (relative_click_x === 0 && relative_click_y > 0) { // edge of quadrant 1 (clockwise)
+            theta = Math.PI/2;
+          } else if (relative_click_x < 0 && relative_click_y === 0) { // edge of quadrant 2
+            theta = Math.PI;
+          } else if (relative_click_x === 0 && relative_click_y < 0) { // edge of quadrant 3
+            theta = 1.5 * Math.PI;
+          } else if (relative_click_x > 0 && relative_click_y === 0) { // edge of quadrant 4
+            theta = 0;
+          }
+
+          // if you're clicking at 0,0 (where the character is), nothing should happen
+
+          // calculate the x and y velocity of the bullet. Ensure overall speed is always 5 units
+          // console.log("theta: " + theta)
+          let x_velo = 5 * Math.cos(theta);
+          let y_velo = 5 * Math.sin(theta);
+          // console.log("x velocity is: "+ x_velo);
+          // console.log("y velocity is: "+ y_velo);
+
+          // // create the projectile with the proper velocity and display in the map/canvas
+          // let projectile = {};
+          // projectile.x_velo = x_velo;
+          // projectile.y_velo = y_velo;
+          
+          // store time projectile was created so know when to remove projectile
+          let date = new Date();// for ensuring projectile has limited range
+          projectile.fire_time = date.getTime();
+          // console.log("firetime: " + projectile.fire_time.toString());
+          // projectile.sprite = this.add.sprite(
+          //   this.container.x + projectile.x_velo,
+          //   this.container.y + projectile.y_velo,
+          //   'small_projectile'
+          // );
+          // // add to projectile array
+          // projectiles.push(projectile);
+          this.socket.emit('playerShooting', {
+            x: this.container.x,
+            y: this.container.y,
+            x_velo: x_velo,
+            y_velo: y_velo
+          })
+          this.shooting = true;
+
         }
-        // save old position data
-        this.container.oldPosition = {
-          x: this.container.x,
-          y: this.container.y,
-          flipX: this.player.flipX
-        };
+      } 
+      if (!this.input.mousePointer.isDown) {
+        // console.log("not shooting");
+        // console.log(this.shooting)
+        this.shooting = false;
       }
+
+      
+
+      // Horizontal movement
+      if (this.cursors.left.isDown) {
+        this.container.body.setVelocityX(-80);
+      } else if (this.cursors.right.isDown) {
+        this.container.body.setVelocityX(80);
+      }
+
+      // Vertical movement
+      if (this.cursors.up.isDown) {
+        this.container.body.setVelocityY(-80);
+      } else if (this.cursors.down.isDown) {
+        this.container.body.setVelocityY(80);
+      }
+
+      // Update the animation last and give left/right animations precedence over up/down animations
+      if (this.cursors.left.isDown) {
+        this.player.anims.play('left', true);
+        this.player.flipX = true;
+      } else if (this.cursors.right.isDown) {
+        this.player.anims.play('right', true);
+        this.player.flipX = false;
+      } else if (this.cursors.up.isDown) {
+        this.player.anims.play('up', true);
+      } else if (this.cursors.down.isDown) {
+        this.player.anims.play('down', true);
+      } else {
+        this.player.anims.stop();
+      }
+
+      // emit player movement
+      let x = this.container.x;
+      let y = this.container.y;
+      let flipX = this.player.flipX;
+      if (this.container.oldPosition && (x !== this.container.oldPosition.x || y !== this.container.oldPosition.y || flipX !== this.container.oldPosition.flipX)) {
+        this.socket.emit('playerMovement', { x, y, flipX });
+      }
+      // save old position data
+      this.container.oldPosition = {
+        x: this.container.x,
+        y: this.container.y,
+        flipX: this.player.flipX
+      };
     }
   }
+}
   
-  var config = {
-    type: Phaser.AUTO,
-    parent: 'content',
-    width: 240,
-    height: 160,
-    autoCenter: false,
-    zoom: 3,
-    pixelArt: true,
-    physics: {
-      default: 'arcade',
-      arcade: {
-        gravity: {
-          y: 0
-        },
-        debug: false // set to true to view zones
-      }
-    },
-    scene: [
-      BootScene,
-      WorldScene
-    ]
-  };
+let config = {
+  type: Phaser.AUTO,
+  parent: 'content',
+  width: 320,
+  height: 240,
+  autoCenter: true,
+  zoom: 3,
+  pixelArt: true,
+  physics: {
+    default: 'arcade',
+    arcade: {
+      gravity: {
+        y: 0
+      },
+      debug: false // set to true to view zones
+    }
+  },
+  scene: [
+    BootScene,
+    WorldScene
+  ]
+};
+//added projectile updater function
 
-  
-  var game = new Phaser.Game(config);
+
+let game = new Phaser.Game(config);
+
+// function render() {
+
+//   game.debug.cameraInfo(game.camera, 500, 32);
+//   game.debug.spriteInfo(card, 32, 32);
+
+//   game.debug.text('Click to toggle sprite / camera movement with cursors', 32, 550);
+
+// }
+
+// console.log(game.camera.x)
   
