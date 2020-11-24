@@ -1,8 +1,13 @@
-let user_id = document.currentScript.getAttribute("user_id")
-let game_id = document.currentScript.getAttribute("game_id")
+let user_id = document.getElementById("code").getAttribute("user_id");
+let game_id = document.getElementById("code").getAttribute("game_id");
+
+
+import Leaderboard from "/assets/js/leaderboard.js";
 
 let projectiles = [];// store projectiles in array client side for now
 var gameStarted = false;
+
+
 
 
 class BootScene extends Phaser.Scene {
@@ -60,7 +65,7 @@ class WorldScene extends Phaser.Scene {
     // create map
     this.createMap();
 
-    
+
 
     // create player animations
     this.createAnimations();
@@ -69,6 +74,7 @@ class WorldScene extends Phaser.Scene {
     // user input
     this.cursors = this.input.keyboard.createCursorKeys();
     this.cursors = this.input.keyboard.addKeys({up:Phaser.Input.Keyboard.KeyCodes.W, down:Phaser.Input.Keyboard.KeyCodes.S, left:Phaser.Input.Keyboard.KeyCodes.A, right:Phaser.Input.Keyboard.KeyCodes.D});
+    
 
     this.socket.on('startGame', function () {
       setTimeout(function(){
@@ -136,44 +142,21 @@ class WorldScene extends Phaser.Scene {
 
     // wait for projectile hits from players
     this.socket.on('playerDamaged', function(playerInfo) {
-      
+      if (playerInfo.playerId == this.socket.id) { // this player was killed -> respawn player
 
-    
-      console.log(playerInfo.playerId)
-      
-      if (playerInfo.playerId == this.socket.id) {
-        
         this.container.x = playerInfo.respawn_x;
         this.container.y = playerInfo.respawn_y;
-       
-        //this.updateCamera()
+        // need some sort of text for this user being killed
         
-
-        // console.log("spawned in original location");
       } else {
-        // console.log("Some other player has been damaged!!")
-
-        // relocate the other player to their spawn location
-        this.otherPlayers.getChildren().forEach(function (player) {
-          console.log("unf")
-          console.log(player.playerId)
+        this.otherPlayers.getChildren().forEach(function (player) { // update all other players of respawning player
           if (playerInfo.playerId === player.playerId) {
-            // player.x = player.respawn_x;
-            // player.y = player.respawn_y;
-            
-            
             player.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
-            
-            
-            // console.log(player.respawn_x);
-            // console.log(player.respawn_y);
           }
+          
         }.bind(this));
-        console.log("other player spawned to original location");
-
       }
     }.bind(this));
-    
   }
 
   redirect(socket){
@@ -440,6 +423,8 @@ addOtherPlayers(playerInfo) {
         this.shooting = false;
       }
 
+
+
       
 
       // Horizontal movement
@@ -507,7 +492,8 @@ let config = {
   },
   scene: [
     BootScene,
-    WorldScene
+    WorldScene,
+    Leaderboard
   ]
 };
 //added projectile updater function
