@@ -4,29 +4,29 @@ const query = require("../queryPool");
 const waitingQueue = require("../waitingQueue")
 
 router.get('/', function (req, res) {
-  res.render('./game.html', { user_id: -1, game_id: -1, host: -1});
+  res.render('./index.html');
 });
 
 
 router.get('/game', function (req, res) {
-  // text = "select * from users where user_id = $1 and game_id = $2";
-  // values = [req.query.user_id, req.query.game_id];
-  // query(text, values, (err, result) => { // postgres database test
-  //   if (err) return res.status(500).send(err)
-  //   if(result.rowCount > 0){ // user and game exists, admit to game
+  text = "select * from users where user_id = $1 and game_id = $2";
+  values = [req.query.user_id, req.query.game_id];
+  query(text, values, (err, result) => { // postgres database test
+    if (err) return res.status(500).send(err)
+    if(result.rowCount > 0){ // user and game exists, admit to game
       
-  //     if(result.rows[0].in_game){
-  //       res.render('./index.html', { root: null});
-  //     }
-  //     else{
-  //       res.render('./game.html', { user_id: req.query.user_id, game_id: req.query.game_id, host: result.rows[0].host});
-  //     }
+      if(result.rows[0].in_game){
+        res.render('./index.html', { root: null});
+      }
+      else{
+        res.render('./game.html', { user_id: req.query.user_id, game_id: req.query.game_id, host: result.rows[0].host});
+      }
       
-  //   }
-  //   else{ // user or game DNE
-      res.render('./game.html', { user_id: -1, game_id: -1, host: -1});
-    // }
-  // }) 
+    }
+    else{ // user or game DNE
+      res.render('./index.html', { root: null});
+    }
+  }) 
 });
 
 

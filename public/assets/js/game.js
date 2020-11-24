@@ -172,6 +172,7 @@ class WorldScene extends Phaser.Scene {
   endGame(socket){
     socket.on('endGame', function(vars) {
       //update database here with user + game stats and then nav to game stats page
+        gameStarted = false
         window.location.href = "/post_game?game_id=" + game_id + "&user_id=" + user_id;
     });
   }
@@ -327,7 +328,7 @@ addOtherPlayers(playerInfo) {
 
 
   update() {
-    if (this.container) {
+    if (this.container && gameStarted) {
       this.container.body.setVelocity(0);
 
       // shooting
