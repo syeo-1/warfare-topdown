@@ -169,6 +169,8 @@ exports = module.exports = function(io){
                             'killed': players[player_id]
                         }
                         io.emit('playerDamaged', players[player_id]);
+                        players[player_id].x = players[player_id].respawn_x;
+                        players[player_id].y = players[player_id].respawn_y;
                         io.emit('updateLeaderBoard', killData)
                         player_damaged = true;
                     }

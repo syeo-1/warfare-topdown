@@ -77,9 +77,10 @@ class WorldScene extends Phaser.Scene {
     // try adding some fixed text to the screen
     // let red_killcount = 0;
     // let blue_killcount = 0;
-    red_text = this.add.text(175, 0, 'Red Team Kills: '+red_killcount.toString(), { fontSize: '12px' }).setScrollFactor(0,0);
-    blue_text = this.add.text(175, 12, 'Blue Team Kills: '+blue_killcount.toString(), { fontSize: '12px' }).setScrollFactor(0,0);
-
+    red_text = this.add.text(175, 0, 'Red Team Kills: '+red_killcount.toString(), { fontFamily: 'Arial', fontSize: '14px' }).setScrollFactor(0,0);
+    blue_text = this.add.text(175, 12, 'Blue Team Kills: '+blue_killcount.toString(), { fontFamily: 'Arial', fontSize: '14px' }).setScrollFactor(0,0);
+    red_text.setResolution(10);
+    blue_text.setResolution(10);
     // create enemies
     //this.createEnemies();
     // listen for web socket events
@@ -141,6 +142,7 @@ class WorldScene extends Phaser.Scene {
     this.socket.on('playerDamaged', function(playerInfo) {
       if (playerInfo.playerId == this.socket.id) { // this player was killed -> respawn player
 
+        this.container.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
         this.container.x = playerInfo.respawn_x;
         this.container.y = playerInfo.respawn_y;
         // need some sort of text for this user being killed
@@ -153,6 +155,9 @@ class WorldScene extends Phaser.Scene {
         this.otherPlayers.getChildren().forEach(function (player) { // update all other players of respawning player
           if (playerInfo.playerId === player.playerId) {
             player.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
+            player.x = playerInfo.respawn_x;
+            player.y = playerInfo.respawn_y;
+            console.log(playerInfo);
           }
           if (playerInfo.team === "A" && playerInfo.playerId === player.playerId) {
             blue_killcount++;
