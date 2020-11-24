@@ -21,8 +21,11 @@ let blue_text;
         this.socket = io();
 
 
-        red_text = this.add.text(175, 0, 'Red Team Kills: '+red_killcount.toString(), { fontSize: '12px' }).setScrollFactor(0,0);
-        blue_text = this.add.text(175, 12, 'Blue Team Kills: '+blue_killcount.toString(), { fontSize: '12px' }).setScrollFactor(0,0);
+        
+        red_text = this.add.text(175, 0, 'Red Team Kills: '+red_killcount.toString(), { fontFamily: 'Arial', fontSize: '14px' }).setScrollFactor(0,0);
+        blue_text = this.add.text(175, 12, 'Blue Team Kills: '+blue_killcount.toString(), { fontFamily: 'Arial', fontSize: '14px' }).setScrollFactor(0,0);
+        red_text.setResolution(10);
+        blue_text.setResolution(10);
 
         red_text.setText("Red Team Kills: "+red_killcount.toString());
         blue_text.setText("Blue Team Kills: "+blue_killcount.toString());

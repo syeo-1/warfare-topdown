@@ -72,15 +72,7 @@ class WorldScene extends Phaser.Scene {
     // user input
     this.cursors = this.input.keyboard.createCursorKeys();
     this.cursors = this.input.keyboard.addKeys({up:Phaser.Input.Keyboard.KeyCodes.W, down:Phaser.Input.Keyboard.KeyCodes.S, left:Phaser.Input.Keyboard.KeyCodes.A, right:Phaser.Input.Keyboard.KeyCodes.D});
-
-
-    // try adding some fixed text to the screen
-    // let red_killcount = 0;
-    // let blue_killcount = 0;
-    red_text = this.add.text(175, 0, 'Red Team Kills: '+red_killcount.toString(), { fontFamily: 'Arial', fontSize: '14px' }).setScrollFactor(0,0);
-    blue_text = this.add.text(175, 12, 'Blue Team Kills: '+blue_killcount.toString(), { fontFamily: 'Arial', fontSize: '14px' }).setScrollFactor(0,0);
-    red_text.setResolution(10);
-    blue_text.setResolution(10);
+    
     // create enemies
     //this.createEnemies();
     // listen for web socket events
