@@ -59,7 +59,9 @@ exports = module.exports = function(io){
                     team: team,
                     user_id: data.user_id,
                     game_id: data.game_id,
-                    username: result.rows[0].username
+                    username: result.rows[0].username,
+                    kills: 0,
+                    deaths: 0,
                 };
                 
                 //update database that user is in game now
@@ -76,8 +78,8 @@ exports = module.exports = function(io){
                 socket.emit('currentPlayers', players);
                 // update all other players of the new player
                 socket.broadcast.emit('newPlayer', players[socket.id]);
-                socket.broadcast.emit('allPlayerInfo', players); // emit to all others
-                socket.emit('allPlayerInfo', players); // emit to self
+                io.emit('allPlayerInfo', players); // emit to all players
+                
 
                 if(Object.keys(players).length  >= 2){ // enough players, start the game
                     
@@ -221,8 +223,11 @@ exports = module.exports = function(io){
                             'shooter': players[cur_projectile.player],
                             'killed': players[player_id]
                         }
+                        players[cur_projectile.player].kills += 1;
+                        players[player_id].deaths += 1;
                         io.emit('playerDamaged', players[player_id]);
                         io.emit('updateLeaderboard', killData)
+                        io.emit('allPlayerInfo', players);
                         player_damaged = true;
                     }
                 }

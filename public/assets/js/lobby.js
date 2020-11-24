@@ -48,14 +48,14 @@ $(document).ready(function() {
     })
 
     socket.on('allPlayerInfo', function(players) {
-        teamA = '<ul class="list-group"><li class="list-group-item list-group-item-primary">TEAM A</li>'
-        teamB = '<ul class="list-group"><li class="list-group-item list-group-item-danger">TEAM B</li>'
+        teamA = '<ul class="list-group"><li class="list-group-item list-group-item-primary"><div class="d-flex justify-content-between"><div>TEAM A</div><div>KILLS</div></div</li>'
+        teamB = '<ul class="list-group"><li class="list-group-item list-group-item-danger"><div class="d-flex justify-content-between"><div>TEAM B</div><div>KILLS</div></div</li>'
         Object.keys(players).forEach(function (id) {
             
             if( players[id].team == "A"){
-                teamA += `<li class="list-group-item">` + players[id].username + `</li>`
+                teamA += `<li class="list-group-item"><div class="d-flex justify-content-between"><div>${players[id].username}</div><div>${players[id].kills}</div></div></li>`
             }else if(players[id].team == "B"){
-                teamB += `<li class="list-group-item">` + players[id].username + `</li>`
+                teamB += `<li class="list-group-item"><div class="d-flex justify-content-between"><div>${players[id].username}</div><div>${players[id].kills}</div></div></li>`
             }
         })
         teamA += "</ul>"
