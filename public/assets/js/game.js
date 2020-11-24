@@ -3,6 +3,11 @@ let game_id = document.currentScript.getAttribute("game_id")
 
 let projectiles = [];// store projectiles in array client side for now
 
+let red_killcount = 0;
+let blue_killcount = 0;
+let red_text;
+let blue_text;
+
 
 class BootScene extends Phaser.Scene {
     constructor() {
@@ -68,6 +73,13 @@ class WorldScene extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.cursors = this.input.keyboard.addKeys({up:Phaser.Input.Keyboard.KeyCodes.W, down:Phaser.Input.Keyboard.KeyCodes.S, left:Phaser.Input.Keyboard.KeyCodes.A, right:Phaser.Input.Keyboard.KeyCodes.D});
 
+
+    // try adding some fixed text to the screen
+    // let red_killcount = 0;
+    // let blue_killcount = 0;
+    red_text = this.add.text(175, 0, 'Red Team Kills: '+red_killcount.toString(), { fontSize: '12px' }).setScrollFactor(0,0);
+    blue_text = this.add.text(175, 12, 'Blue Team Kills: '+blue_killcount.toString(), { fontSize: '12px' }).setScrollFactor(0,0);
+
     // create enemies
     //this.createEnemies();
     // listen for web socket events
@@ -132,10 +144,20 @@ class WorldScene extends Phaser.Scene {
         this.container.x = playerInfo.respawn_x;
         this.container.y = playerInfo.respawn_y;
         // need some sort of text for this user being killed
+        if (playerInfo.team === "A") {
+          blue_killcount++;
+        } else if (playerInfo.team === "B") {
+          red_killcount++;
+        }
       } else {
         this.otherPlayers.getChildren().forEach(function (player) { // update all other players of respawning player
           if (playerInfo.playerId === player.playerId) {
             player.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
+          }
+          if (playerInfo.team === "A" && playerInfo.playerId === player.playerId) {
+            blue_killcount++;
+          } else if (playerInfo.team === "B" && playerInfo.playerId === player.playerId) {
+            red_killcount++;
           }
         }.bind(this));
       }
@@ -386,6 +408,13 @@ class WorldScene extends Phaser.Scene {
         // console.log(this.shooting)
         this.shooting = false;
       }
+
+      // update the kill count text to the latest count
+      red_text.setText("Red Team Kills: "+red_killcount.toString());
+      blue_text.setText("Blue Team Kills: "+blue_killcount.toString());
+      // red_text = this.add.text(175, 0, 'Red Team Kills: '+red_killcount.toString(), { fontSize: '12px' }).setScrollFactor(0,0);
+      // red_text = this.add.text(175, 0, 'Red Team Kills: '+red_killcount.toString(), { fontSize: '12px' }).setScrollFactor(0,0);
+      // blue_text = this.add.text(175, 12, 'Blue Team Kills: '+blue_killcount.toString(), { fontSize: '12px' }).setScrollFactor(0,0);
 
       
 

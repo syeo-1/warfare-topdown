@@ -9,6 +9,9 @@ const query = require("./queryPool");
 const players = {};
 const projectiles = [];
 
+let red_killcount = 0;
+let blue_killcount = 0;
+
 exports = module.exports = function(io){
     io.on('connection', function (socket) {
         //update user in database here
