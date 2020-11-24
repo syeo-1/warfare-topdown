@@ -327,7 +327,7 @@ addOtherPlayers(playerInfo) {
 
 
   update() {
-    if (this.container && gameStarted) {
+    if (this.container) {
       this.container.body.setVelocity(0);
 
       // shooting

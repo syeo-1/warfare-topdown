@@ -9,8 +9,6 @@ const waitingQueue = require("./waitingQueue")
 const players = {};
 const projectiles = [];
 
-let red_killcount = 0;
-let blue_killcount = 0;
 
 exports = module.exports = function(io){
     io.on('connection', function (socket) {
@@ -59,7 +57,7 @@ exports = module.exports = function(io){
                     team: team,
                     user_id: data.user_id,
                     game_id: data.game_id,
-                    username: result.rows[0].username,
+                    username: socket.id, // dont push to master -> result.rows[0].username
                     kills: 0,
                     deaths: 0,
                 };

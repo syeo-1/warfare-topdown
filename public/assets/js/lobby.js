@@ -7,14 +7,14 @@ var countDownTimer = function(){
      if(count > 0 ) {
           
           $(".timer").html(`Starting in: ${count}`)
-          count--;
+        //   count--;
      } else {
         $(".timer").html(`Started`)
           clearInterval(id);
           count = 15
           $(".timer").html(`Starting in: 0`)
           $(".clock").html(`00:${count}`)
-          count--
+        //   count--
           id = setInterval(clock, 1000);
      }
 };
@@ -29,7 +29,7 @@ var clock = function(){
             $(".clock").html(`00:${count}`)
          }
          
-         count--;
+        //  count--;
     } else {
          clearInterval(id);
     }
