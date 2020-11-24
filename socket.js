@@ -225,9 +225,13 @@ exports = module.exports = function(io){
                         }
                         players[cur_projectile.player].kills += 1;
                         players[player_id].deaths += 1;
+                        players[player_id].x = players[player_id].respawn_x;
+                        players[player_id].y = players[player_id].respawn_y;
+
                         io.emit('playerDamaged', players[player_id]);
                         io.emit('updateLeaderboard', killData)
                         io.emit('allPlayerInfo', players);
+                        
                         player_damaged = true;
                     }
                 }

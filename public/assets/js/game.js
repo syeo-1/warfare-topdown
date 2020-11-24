@@ -144,6 +144,7 @@ class WorldScene extends Phaser.Scene {
     this.socket.on('playerDamaged', function(playerInfo) {
       if (playerInfo.playerId == this.socket.id) { // this player was killed -> respawn player
 
+        this.container.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
         this.container.x = playerInfo.respawn_x;
         this.container.y = playerInfo.respawn_y;
         // need some sort of text for this user being killed
@@ -152,6 +153,9 @@ class WorldScene extends Phaser.Scene {
         this.otherPlayers.getChildren().forEach(function (player) { // update all other players of respawning player
           if (playerInfo.playerId === player.playerId) {
             player.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
+            player.x = playerInfo.respawn_x;
+            player.y = playerInfo.respawn_y;
+            console.log(playerInfo);
           }
           
         }.bind(this));
