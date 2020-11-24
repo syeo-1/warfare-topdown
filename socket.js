@@ -169,7 +169,7 @@ exports = module.exports = function(io){
                             'killed': players[player_id]
                         }
                         io.emit('playerDamaged', players[player_id]);
-                        io.emit('updateLeaderBoard', killData)
+                        io.emit('updateLeaderboard', killData)
                         player_damaged = true;
                     }
                 }
