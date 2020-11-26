@@ -51,6 +51,7 @@ exports = module.exports = function(io){
                     flipX: false,
                     respawn_x: x,
                     respawn_y: y,
+                    health: 100,
                     x: x,
                     y: y, // spread out new users
                     playerId: socket.id,
@@ -221,13 +222,24 @@ exports = module.exports = function(io){
                             'shooter': players[cur_projectile.player],
                             'killed': players[player_id]
                         }
-                        players[cur_projectile.player].kills += 1;
-                        players[player_id].deaths += 1;
-                        players[player_id].x = players[player_id].respawn_x;
-                        players[player_id].y = players[player_id].respawn_y;
+
+                        
+                        players[player_id].health -= 20;
+
 
                         io.emit('playerDamaged', players[player_id]);
-                        io.emit('updateLeaderboard', killData)
+
+
+                        if (players[player_id].health <= 0) {
+                            players[cur_projectile.player].kills += 1;
+                            players[player_id].deaths += 1;
+                            players[player_id].x = players[player_id].respawn_x;
+                            players[player_id].y = players[player_id].respawn_y;
+                            players[player_id].health = 100;
+                            io.emit('updateLeaderboard', killData)
+                            console.log("player killed!");
+                        }
+
                         io.emit('allPlayerInfo', players);
                         
                         player_damaged = true;

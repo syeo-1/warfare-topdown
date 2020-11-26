@@ -7,7 +7,12 @@ import Leaderboard from "/assets/js/leaderboard.js";
 let projectiles = [];// store projectiles in array client side for now
 var gameStarted = false;
 
+let player_health;
+let full_health = 100;
 
+let red_bar;
+let green_bar;
+let healthbar_label;
 
 
 class BootScene extends Phaser.Scene {
@@ -38,6 +43,10 @@ class BootScene extends Phaser.Scene {
 
       // load small projectile image
       this.load.image('small_projectile', 'assets/images/small_projectile.png');
+
+      // load health
+      this.load.image('green_bar', 'assets/images/green_bar.png');
+      this.load.image('red_bar', 'assets/images/red_bar.png');
     }
   
     create() {
@@ -75,6 +84,24 @@ class WorldScene extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.cursors = this.input.keyboard.addKeys({up:Phaser.Input.Keyboard.KeyCodes.W, down:Phaser.Input.Keyboard.KeyCodes.S, left:Phaser.Input.Keyboard.KeyCodes.A, right:Phaser.Input.Keyboard.KeyCodes.D});
     
+    // initialize player heatlh
+    player_health = 100;
+
+    // create health bar
+    red_bar = this.add.image(90, 225, 'red_bar');
+    red_bar.setScrollFactor(0,0);
+    red_bar.setScale(0.75);
+    // red_bar.setOrigin(0.5);
+
+    green_bar = this.add.image(15, 218, 'green_bar');
+    green_bar.setScrollFactor(0,0);
+    green_bar.setScale(0.75);
+    green_bar.setOrigin(0);
+
+    // bar label
+    healthbar_label = this.add.text(15, 200, 'Player Health', {fontFamily: 'Arial', fontSize: '14px'});
+    healthbar_label.setScrollFactor(0,0);
+    healthbar_label.setResolution(10);
 
     this.socket.on('startGame', function () {
       setTimeout(function(){
@@ -143,19 +170,54 @@ class WorldScene extends Phaser.Scene {
     // wait for projectile hits from players
     this.socket.on('playerDamaged', function(playerInfo) {
       if (playerInfo.playerId == this.socket.id) { // this player was killed -> respawn player
+        // this.container.health -= 50;
+        // console.log(this.container.health);
+        // playerInfo.health -= 50;
+        // console.log(playerInfo.health);
+        if (playerInfo.health <= 0) {
+          this.container.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
+          this.container.x = playerInfo.respawn_x;
+          this.container.y = playerInfo.respawn_y;
+          playerInfo.health = 100;
+          // green_bar.displayOriginX = 100;
+          // console.log("respawn me");
+        }
+        // console.log(playerInfo.health)
+        // console.log(green_bar.displayWidth);
+        green_bar.setScale((playerInfo.health / 100)*0.75, 0.75);// adjusts bar to proper width
+        // console.log("green bar x origin: "+green_bar.displayOriginX);
+        // console.log("red bar x origin: "+red_bar.displayOriginX);
 
-        this.container.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
-        this.container.x = playerInfo.respawn_x;
-        this.container.y = playerInfo.respawn_y;
+
+        // console.log("green bar width: "+green_bar.displayWidth);
+        // console.log("red bar width: "+red_bar.displayWidth);
+
+        // green_bar.displayOriginX += ((20/100)*150)-1;
+
+        // figure out how to adjust x posn of bar to proper position
+
+        // console.log("preadjustment origin: "+green_bar.displayOriginX);
+        // // set the green bar x value to the appropirate position after scaling
+        // green_bar.displayOriginX += (playerInfo.health/100)*0.75*15;
+        // console.log("origin is: " + green_bar.displayOriginX);
+        // console.log(green_bar.displayWidth);
+        // green_bar.width -= 50;
         // need some sort of text for this user being killed
         
       } else {
         this.otherPlayers.getChildren().forEach(function (player) { // update all other players of respawning player
           if (playerInfo.playerId === player.playerId) {
-            player.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
-            player.x = playerInfo.respawn_x;
-            player.y = playerInfo.respawn_y;
-            console.log(playerInfo);
+            player.health -= 20;
+            // console.log(player.health);
+            // console.log(playerInfo.health);
+            if (playerInfo.health <= 0) {
+              player.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
+              player.x = playerInfo.respawn_x;
+              player.y = playerInfo.respawn_y;
+              playerInfo.health = 100;
+              // console.log("respawn");
+            }
+            // console.log("shot?");
           }
           
         }.bind(this));
@@ -427,7 +489,9 @@ addOtherPlayers(playerInfo) {
         this.shooting = false;
       }
 
-
+      // update the health bar if player has been damaged
+      // green_bar.scale.setTo(this.container.health / 100, 0.75);
+      // console.log(this.container);
 
       
 
