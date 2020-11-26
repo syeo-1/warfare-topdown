@@ -86,17 +86,20 @@ exports = module.exports = function(io){
                     values = [data.game_id]
                     query(text, values, (err, result) => { // postgres database test
                         if (err) return console.log(err)
-                        socket.broadcast.emit('startGame');
-                        socket.emit('startGame');
+                        io.emit('startGame');
                         setTimeout(function(){
-                            text  = `update games set state = 'finished' where game_id = $1;`
-                            values = [data.game_id]
-                            query(text, values, (err, result) => { // postgres database test
-                                if (err) return console.log(err)
-                                // socket.broadcast.emit('endGame');
-                                // socket.emit('endGame')
-                            })
-                        }, 20000)
+                            io.emit('startGameClock'); // wait 5 seconds for countdown then start
+                            setTimeout(function(){
+                                text  = `update games set state = 'finished' where game_id = $1;`
+                                values = [data.game_id]
+                                query(text, values, (err, result) => { // postgres database test
+                                    if (err) return console.log(err)
+                                    // socket.broadcast.emit('endGame');
+                                    // socket.emit('endGame')
+                                })
+                            }, 15000)
+                        }, 5000)
+                        
                     })
                     
                     
