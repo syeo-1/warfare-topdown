@@ -111,7 +111,7 @@ class WorldScene extends Phaser.Scene {
       
     }.bind(this))
     // create enemies
-    //this.createEnemies();
+    this.createEnemies();
     // listen for web socket events
     this.socket.on('currentPlayers', function (players) {
       Object.keys(players).forEach(function (id) {
@@ -150,7 +150,11 @@ class WorldScene extends Phaser.Scene {
       // console.log("client updated by server")
       for (let i = 0 ; i < server_projectiles.length ; i++) { // not enough
         if (projectiles[i] == undefined) {
-          projectiles[i] = this.add.sprite(server_projectiles[i].x, server_projectiles[i].y, 'small_projectile');
+          let proj_sprite = this.add.sprite(server_projectiles[i].x, server_projectiles[i].y, 'small_projectile');
+          proj_sprite.setScale(0.5);
+          projectiles[i] = proj_sprite;
+          // projectiles[i] = this.add.sprite(server_projectiles[i].x, server_projectiles[i].y, 'small_projectile');
+
         } else {
           projectiles[i].x = server_projectiles[i].x;
           projectiles[i].y = server_projectiles[i].y;

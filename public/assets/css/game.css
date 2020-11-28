@@ -15,3 +15,19 @@ html, body {
 .text-white{
     color: white;
 }
+
+.game_tutorial {
+    /* padding-right: 50px; */
+}
+
+.game_images {
+    margin: 0 auto;
+    margin-left: 0;
+    display: block;
+}
+
+.tutorial_text {
+    /* text-align: center; */
+    font-size: 24px;
+    margin-left: 100px;
+}
