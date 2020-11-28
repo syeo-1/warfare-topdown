@@ -111,7 +111,7 @@ class WorldScene extends Phaser.Scene {
       
     }.bind(this))
     // create enemies
-    //this.createEnemies();
+    this.createEnemies();
     // listen for web socket events
     this.socket.on('currentPlayers', function (players) {
       Object.keys(players).forEach(function (id) {
@@ -150,7 +150,11 @@ class WorldScene extends Phaser.Scene {
       // console.log("client updated by server")
       for (let i = 0 ; i < server_projectiles.length ; i++) { // not enough
         if (projectiles[i] == undefined) {
-          projectiles[i] = this.add.sprite(server_projectiles[i].x, server_projectiles[i].y, 'small_projectile');
+          let proj_sprite = this.add.sprite(server_projectiles[i].x, server_projectiles[i].y, 'small_projectile');
+          proj_sprite.setScale(0.5);
+          projectiles[i] = proj_sprite;
+          // projectiles[i] = this.add.sprite(server_projectiles[i].x, server_projectiles[i].y, 'small_projectile');
+
         } else {
           projectiles[i].x = server_projectiles[i].x;
           projectiles[i].y = server_projectiles[i].y;
@@ -168,10 +172,22 @@ class WorldScene extends Phaser.Scene {
     
 
     // wait for projectile hits from players
-    this.socket.on('playerDamaged', function(playerInfo) {
+    this.socket.on('playerDamaged', function(playerInfo, shooterInfo) {
       
+  
       if (playerInfo.playerId == this.socket.id) { // this player was killed -> respawn player
         this.player.setTint(0xFF0000);
+        var me = this
+        setTimeout(function(){
+          if(playerInfo.team == 'A'){
+            console.log("a")
+            me.player.setTint(0x0000FF);
+          }
+          else{
+            console.log("b")
+            me.player.setTint(0x808080);
+          }
+        }, 100)
         // this.container.health -= 50;
         // console.log(this.container.health);
         // playerInfo.health -= 50;
@@ -210,8 +226,16 @@ class WorldScene extends Phaser.Scene {
         this.otherPlayers.getChildren().forEach(function (player) { // update all other players of respawning player
           if (playerInfo.playerId === player.playerId) {
             player.health -= 20;
-            // console.log(player.health);
-            // console.log(playerInfo.health);
+            player.setTint(0xFF0000);
+            setTimeout(function(){
+              if(playerInfo.team == 'A'){
+                player.setTint(0x0000FF);
+              }
+              else{
+                player.setTint(0x808080);
+              }
+            }, 100)
+            
             if (playerInfo.health <= 0) {
               player.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
               player.x = playerInfo.respawn_x;
@@ -219,6 +243,7 @@ class WorldScene extends Phaser.Scene {
               playerInfo.health = 100;
               // console.log("respawn");
             }
+            
             // console.log("shot?");
           }
           
