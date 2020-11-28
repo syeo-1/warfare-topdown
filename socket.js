@@ -8,6 +8,7 @@ const waitingQueue = require("./waitingQueue")
 
 const players = {};
 const projectiles = [];
+const kill_multiplier = 10;
 
 
 exports = module.exports = function(io){
@@ -58,7 +59,7 @@ exports = module.exports = function(io){
                     team: team,
                     user_id: data.user_id,
                     game_id: data.game_id,
-                    username: socket.id, // dont push to master -> result.rows[0].username
+                    username: result.rows[0].username,
                     kills: 0,
                     deaths: 0,
                 };
@@ -90,14 +91,41 @@ exports = module.exports = function(io){
                         setTimeout(function(){
                             io.emit('startGameClock'); // wait 5 seconds for countdown then start
                             setTimeout(function(){
-                                text  = `update games set state = 'finished' where game_id = $1;`
-                                values = [data.game_id]
-                                query(text, values, (err, result) => { // postgres database test
+                                var team_a_score = 0;
+                                var team_b_score = 0;
+                                var team_a_top_player = "";
+                                var team_b_top_player = "";
+                                var team_a_top_score = 0;
+                                var team_b_top_score = 0;
+                                Object.keys(players).forEach(function (id) {
+                                    
+                                    if(players[id].team == 'A'){
+                                        var player_score = players[id].kills * kill_multiplier
+                                        team_a_score += player_score
+                                        if(player_score > team_a_top_score){
+                                            team_a_top_score = player_score
+                                            team_a_top_player = players[id].username
+                                        }
+                                    }
+                                    else{
+                                        var player_score = players[id].kills * kill_multiplier
+                                        team_b_score += player_score
+                                        if(player_score > team_b_top_score){
+                                            team_b_top_score = player_score
+                                            team_b_top_player = players[id].username
+                                        }
+                                    } 
+                                })
+                                
+                                text  = `update games set state = 'finished', team_a_score = $2, team_a_top_player = $3, team_a_top_score = $4, 
+                                team_b_score = $5, team_b_top_player = $6, team_b_top_score = $7 where game_id = $1;`
+                                values = [data.game_id, team_a_score, team_a_top_player, team_a_top_score, team_b_score, team_b_top_player, team_b_top_score]
+                                query(text, values, (err, result) => { 
                                     if (err) return console.log(err)
-                                    io.emit('endGame');
+                                    io.emit('endGame', players);
                                     
                                 })
-                            }, 15000)
+                            }, 10000)
                         }, 5000)
                         
                     })
@@ -274,34 +302,3 @@ exports = module.exports = function(io){
     setInterval(check_proj_collisions, 16);
 
 }
-
-// function check_proj_collisions() {
-//     // update all projectile information in map
-//     // console.log("hello world");
-//     for (let i = 0 ; i < projectiles.length ; i++) {
-//         // console.log(projectiles[i]);
-//         // re-render each bullet based on its speed
-//         let cur_projectile = projectiles[i];
-//         cur_projectile.x += cur_projectile.x_velo; 
-//         cur_projectile.y += cur_projectile.y_velo;
-   
-//         // remove the bullet if it has traveled for 0.75 seconds (750ms) or it's at boundaries of the map
-//         let date = new Date();
-//         let cur_time = date.getTime();
-//         // console.log("curtime: " + cur_time.toString());
-//         let destroy_time = cur_time-cur_projectile.fire_time;
-//         if (destroy_time >= 750 || 
-//          cur_projectile.x <= 0 || cur_projectile.x >= 480 ||
-//          cur_projectile.y <= 0 || cur_projectile.y >= 480) {
-//            //  console.log(destroy_time);
-//            //    cur_projectile.sprite.destroy();
-//            projectiles.splice(i,1);
-//            i--;
-//         }
-//     }
-//     console.log("poop");
-//     server_io.emit('updateProjectiles', projectiles);
-//     console.log("stinky")
-// }
-
-// setInterval(check_proj_collisions, 16);

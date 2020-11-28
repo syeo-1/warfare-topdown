@@ -2,7 +2,7 @@ let user_id = document.getElementById("code").getAttribute("user_id");
 let game_id = document.getElementById("code").getAttribute("game_id");
 
 
-import Leaderboard from "/assets/js/leaderboard.js";
+import Scoreboard from "/assets/js/scoreboard.js";
 
 let projectiles = [];// store projectiles in array client side for now
 var gameStarted = false;
@@ -169,7 +169,9 @@ class WorldScene extends Phaser.Scene {
 
     // wait for projectile hits from players
     this.socket.on('playerDamaged', function(playerInfo) {
+      
       if (playerInfo.playerId == this.socket.id) { // this player was killed -> respawn player
+        this.player.setTint(0xFF0000);
         // this.container.health -= 50;
         // console.log(this.container.health);
         // playerInfo.health -= 50;
@@ -305,7 +307,7 @@ createPlayer(playerInfo) {
     this.player.setTint(0x0000FF);
   }
   else{
-    this.player.setTint(0xFF0000);
+    this.player.setTint(0x808080);
   }
 
   this.container = this.add.container(playerInfo.x, playerInfo.y);
@@ -329,7 +331,7 @@ addOtherPlayers(playerInfo) {
     otherPlayer.setTint(0x0000FF);
   }
   else{
-    otherPlayer.setTint(0xFF0000);
+    otherPlayer.setTint(0x808080);
   }
   
   otherPlayer.playerId = playerInfo.playerId;
@@ -562,7 +564,7 @@ let config = {
   scene: [
     BootScene,
     WorldScene,
-    Leaderboard
+    Scoreboard
   ]
 };
 //added projectile updater function

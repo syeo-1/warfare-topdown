@@ -39,7 +39,7 @@
                       TEAM A SCORE
                     </div>
                     <div class="col">
-                      0
+                      <%= result[0].team_a_score %>
                     </div>
                   </div>
                 </li>
@@ -49,37 +49,53 @@
                       TEAM B SCORE
                     </div>
                     <div class="col">
-                      0
+                      <%= result[0].team_b_score %>
                     </div>
                   </div>
                 </li>
                 <li class="list-group-item">
                   <div class="row">
                     <div class="col">
-                      GAME TIME
+                      ELAPSED TIME
                     </div>
                     <div class="col">
-                      <div class="clock">0</div>
+                      <div class="clock">4:00</div>
                     </div>
                   </div>
                 </li>
                 <li class="list-group-item">
                   <div class="row">
-                    <div class="col">
+                    <div class="col" style="color: blue;">
                       Team A Top Player
                     </div>
-                    <div class="col">
-                      <div class="clock">x</div>
+                    <div class="col" style="color: blue;">
+                      SCORE
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col" style="color: blue;">
+                      <%= result[0].team_a_top_player %>
+                    </div>
+                    <div class="col" style="color: blue;">
+                      <%= result[0].team_a_top_score%>
                     </div>
                   </div>
                 </li>
                 <li class="list-group-item">
                   <div class="row">
-                    <div class="col">
-                      TEAM B Top Player
+                    <div class="col" style="color: grey;">
+                      Team B Top Player
                     </div>
-                    <div class="col">
-                      <div class="clock">y</div>
+                    <div class="col" style="color: grey;">
+                      SCORE
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col" style="color: grey;">
+                      <%= result[0].team_b_top_player %>
+                    </div>
+                    <div class="col" style="color: grey;">
+                      <%= result[0].team_b_top_score%>
                     </div>
                   </div>
                 </li>
@@ -91,6 +107,18 @@
             </div>
             
       
+          </div>
+          <br>
+          <hr>
+          <br>
+          <div class="row">
+            <div class="col">
+              <% if(result[0].team_a_score > result[0].team_b_score){ %>
+                <h1 style="color: blue;">TEAM A WINS ! ! !</h1>
+             <% } else{ %>
+              <h1 style="color: grey;">TEAM B WINS ! ! !</h1>
+              <% } %>
+            </div>
           </div>
     </div>
 </body>

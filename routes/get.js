@@ -38,6 +38,7 @@ router.get('/post_game', function (req, res) {
   query(text, values, (err, result) => { // postgres database test
     if (err) return res.status(500).send(err)
     if(result.rowCount > 0){ // user and game exists
+      console.log(result.rows)
       res.render('./post_game.html', { user_id: req.query.user_id, game_id: req.query.game_id, result: result.rows});
     }
     else{ // user or game DNE
