@@ -81,7 +81,7 @@ exports = module.exports = function(io){
                 io.emit('allPlayerInfo', players); // emit to all players
                 
 
-                if(Object.keys(players).length  >= 2){ // enough players, start the game
+                if(Object.keys(players).length  >= 3){ // enough players, start the game
                     
                     text  = `update games set state = 'started' where game_id = $1;`
                     values = [data.game_id]
@@ -125,7 +125,7 @@ exports = module.exports = function(io){
                                     io.emit('endGame', players);
                                     
                                 })
-                            }, 10000)
+                            }, 15000)
                         }, 5000)
                         
                     })
@@ -265,9 +265,9 @@ exports = module.exports = function(io){
 
                         if (players[player_id].health <= 0) {
                             players[cur_projectile.player].kills += 1;
-                            io.emit('kill', players[cur_projectile.player]);
+                            io.emit('kill', players[cur_projectile.player], players[player_id].username);
                             players[player_id].deaths += 1;
-                            io.emit('death', players[player_id]);
+                            io.emit('death', players[player_id], players[cur_projectile.player].username);
                             players[player_id].x = players[player_id].respawn_x;
                             players[player_id].y = players[player_id].respawn_y;
                             players[player_id].health = 100;

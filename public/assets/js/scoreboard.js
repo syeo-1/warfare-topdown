@@ -7,6 +7,7 @@ const kill_multiplier = 10;
 var clockText;
 var countDownText;
 var id;
+var id_countdown
 
 class Scoreboard extends Phaser.Scene {
   constructor() {
@@ -23,14 +24,16 @@ class Scoreboard extends Phaser.Scene {
     this.countDownTime = 5; // 2:30
 
     clockText = this.add.text(140, 5, this.formatTime(this.initialTime), { fontFamily: 'Arial', fontSize: '14px', color:'#000000' });
-
     countDownText = this.add.text(10, 100, "WAITING: " + this.formatTime(this.countDownTime), { fontFamily: 'Arial', fontSize: '28px', color:'#FF0000' });
+    
     
     this.socket.on('startGame', function(){
       id_countdown = setInterval(function(){
         this.updateCountdown()
       }.bind(this), 1000);
     }.bind(this));
+
+    
 
 
     this.socket.on('startGameClock', function(){

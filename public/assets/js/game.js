@@ -13,6 +13,7 @@ let full_health = 100;
 let red_bar;
 let green_bar;
 let healthbar_label;
+var gameText;
 
 
 class BootScene extends Phaser.Scene {
@@ -78,6 +79,7 @@ class WorldScene extends Phaser.Scene {
 
     // create player animations
     this.createAnimations();
+    gameText = this.add.text(140, 140, "", { fontFamily: 'Arial', fontSize: '25px', color:'#FF0000' });
     
 
     // user input
@@ -249,6 +251,28 @@ class WorldScene extends Phaser.Scene {
           
         }.bind(this));
       }
+    }.bind(this));
+
+    this.socket.on('kill', function(playerInfo, killed){ // move to player class
+      console.log(this.socket.id)
+      if (playerInfo.playerId == this.socket.id) { 
+        
+        gameText.setText("You Killed: " + killed);
+        setTimeout(function(){
+          gameText.setText("");
+        }, 2000)
+      }
+    }.bind(this));
+
+    this.socket.on('death', function(playerInfo, killer){ // move to player class
+      if (playerInfo.playerId == this.socket.id) { 
+        console.log("death")
+        gameText.setText("Killed by: " + killer);
+        setTimeout(function(){
+          gameText.setText("");
+        }, 2000)
+      }
+
     }.bind(this));
   }
 
