@@ -116,6 +116,9 @@ class WorldScene extends Phaser.Scene {
 
     // create player animations
     this.createAnimations();
+
+    // create barriers
+    this.createBarriers();
     
 
     // user input
@@ -148,8 +151,7 @@ class WorldScene extends Phaser.Scene {
       
       
     }.bind(this))
-    // create enemies
-    this.createBarriers();
+    
     // listen for web socket events
     this.socket.on('currentPlayers', function (players) {
       Object.keys(players).forEach(function (id) {
