@@ -1,15 +1,45 @@
 const query = require("./queryPool");
 const waitingQueue = require("./waitingQueue")
 
-// const express = require('express');
-// const app = express();
-// const http = require('http').Server(app);
-// const server_io = require('socket.io')(http);
-
 const players = {};
 const projectiles = [];
 const kill_multiplier = 10;
+let barrier_locations = [
+    {x:125, y:0},
+    {x:125, y:30},
+    {x:125, y:50},
+    {x:125, y:70},
+    {x:125, y:90},
+    {x:125, y:110},
+    {x:125, y:130},
+    {x:125, y:150},
+    {x:125, y:170},
+    {x:125, y:190},
+    {x:145, y:190},
+    {x:165, y:190},
+    {x:185, y:190},
+    {x:205, y:190},
+    {x:225, y:190},
+    {x:245, y:190},
+    {x:265, y:190},
+    {x:285, y:190},
+    {x:305, y:190},
+    {x:325, y:190},
+    
+    // team barriers
+    {x:125, y:300},
+    {x:125, y:320},
+    {x:125, y:340},
+    {x:400, y:300},
+    {x:400, y:320},
+    {x:400, y:340},
 
+    // barrier scatterings
+    {x:260, y: 265},
+    {x:260, y: 370},
+    {x:193, y: 420},
+    {x:330, y: 420},
+];
 
 exports = module.exports = function(io){
     io.on('connection', function (socket) {
@@ -213,16 +243,13 @@ exports = module.exports = function(io){
             socket.broadcast.emit('playerMoved', players[socket.id]);
         });
 
-        // UNCOMMENT THE BELOW ONCE CLIENT CAN SHOOT BULLETS (SINGLE CLIENT INSTANCE)
-
         // when a player shoots, update projectile array info
         socket.on('playerShooting', function(shootingData) {
             if (players[socket.id] == undefined) {
                 console.log("player id undefined");
                 return;
             }
-            // console.log("bullet received");
-            // console.log(shootingData);
+            
             let projectile = shootingData;
             shootingData.player = socket.id;// to ensure player shooting bullet isn't damaged by own bullet
             projectiles.push(projectile);
@@ -233,9 +260,7 @@ exports = module.exports = function(io){
     });
     function check_proj_collisions() {
         // update all projectile information in map
-        // console.log("hello world");
         for (let i = 0 ; i < projectiles.length ; i++) {
-            // console.log(projectiles[i]);
             // re-render each bullet based on its speed
             let cur_projectile = projectiles[i];
             
@@ -244,13 +269,25 @@ exports = module.exports = function(io){
 
             let player_damaged = false;
 
+            // remove the bullet if it's too near a barrier
+            for (let j = 0 ; j < barrier_locations.length ; j++) {
+                let barrier_to_proj_x = barrier_locations[j].x - cur_projectile.x;
+                let barrier_to_proj_y = barrier_locations[j].y - cur_projectile.y;
+
+                let scaler_dist = Math.sqrt((barrier_to_proj_x ** 2) + (barrier_to_proj_y ** 2));
+
+                if (scaler_dist < 10) {
+                    // remove the projectile
+                    projectiles.splice(i,1);
+                }
+            }
+
             for (let player_id in players) {
                 if (cur_projectile.player != player_id) {
                     let player_to_bullet_x = players[player_id].x - cur_projectile.x;
                     let player_to_bullet_y = players[player_id].y - cur_projectile.y;
 
                     let scaler_dist = Math.sqrt((player_to_bullet_x ** 2) + (player_to_bullet_y ** 2));
-                    // console.log(scaler_dist);
                     if (scaler_dist < 10) {
                         killData = {
                             'shooter': players[cur_projectile.player],
@@ -284,26 +321,22 @@ exports = module.exports = function(io){
                     }
                 }
             }
+
+            
        
-            // remove the bullet if it has traveled for 0.75 seconds (750ms) or it's at boundaries of the map
-            // or... the bullet has hit a person
+            // remove the bullet if it has traveled for 0.75 seconds (750ms), it's at boundaries of the map, or the bullet has hit a person
             let date = new Date();
             let cur_time = date.getTime();
-            // console.log("curtime: " + cur_time.toString());
             let destroy_time = cur_time-cur_projectile.fire_time;
             if (destroy_time >= 750 || 
              cur_projectile.x <= 0 || cur_projectile.x >= 480 ||
              cur_projectile.y <= 0 || cur_projectile.y >= 480 ||
              player_damaged) {
-               //  console.log(destroy_time);
-               //    cur_projectile.sprite.destroy();
                projectiles.splice(i,1);
                i--;
             }
         }
-        // console.log("poop");
         io.emit('updateProjectiles', projectiles);
-        // console.log("stinky")
     }
 
     setInterval(check_proj_collisions, 16);
