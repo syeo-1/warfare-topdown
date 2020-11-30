@@ -138,6 +138,17 @@ class WorldScene extends Phaser.Scene {
     this.socket.on('playerMoved', function (playerInfo) {
       this.otherPlayers.getChildren().forEach(function (player) {
         if (playerInfo.playerId === player.playerId) {
+          if (playerInfo.key_pressed == 'left') {
+            player.anims.play('left', true);
+          } else if (playerInfo.key_pressed == 'right') {
+            player.anims.play('right', true);
+          } else if (playerInfo.key_pressed == 'up') {
+            player.anims.play('up', true);
+          } else if (playerInfo.key_pressed == 'down') {
+            player.anims.play('down', true);
+          } else {
+            player.anims.stop();
+          }
           player.flipX = playerInfo.flipX;
           player.setPosition(playerInfo.x, playerInfo.y);
         }
@@ -540,17 +551,22 @@ addOtherPlayers(playerInfo) {
         this.container.body.setVelocityY(80);
       }
 
+      var key_pressed = ''
       // Update the animation last and give left/right animations precedence over up/down animations
       if (this.cursors.left.isDown) {
         this.player.anims.play('left', true);
         this.player.flipX = true;
+        key_pressed = 'left';
       } else if (this.cursors.right.isDown) {
         this.player.anims.play('right', true);
         this.player.flipX = false;
+        key_pressed = 'right';
       } else if (this.cursors.up.isDown) {
         this.player.anims.play('up', true);
+        key_pressed = 'up';
       } else if (this.cursors.down.isDown) {
         this.player.anims.play('down', true);
+        key_pressed = 'down';
       } else {
         this.player.anims.stop();
       }
@@ -560,7 +576,7 @@ addOtherPlayers(playerInfo) {
       let y = this.container.y;
       let flipX = this.player.flipX;
       if (this.container.oldPosition && (x !== this.container.oldPosition.x || y !== this.container.oldPosition.y || flipX !== this.container.oldPosition.flipX)) {
-        this.socket.emit('playerMovement', { x, y, flipX });
+        this.socket.emit('playerMovement', { x, y, flipX, key_pressed });
       }
       // save old position data
       this.container.oldPosition = {
