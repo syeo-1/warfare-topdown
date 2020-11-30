@@ -270,7 +270,7 @@ exports = module.exports = function(io){
                             players[cur_projectile.player].kills += 1;
                             io.emit('kill', players[cur_projectile.player], players[player_id].username);
                             players[player_id].deaths += 1;
-                            io.emit('death', players[player_id], players[cur_projectile.player].username);
+                            
                             players[player_id].x = players[player_id].respawn_x;
                             players[player_id].y = players[player_id].respawn_y;
                             players[player_id].health = 100;

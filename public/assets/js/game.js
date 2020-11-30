@@ -79,7 +79,7 @@ class WorldScene extends Phaser.Scene {
 
     // create player animations
     this.createAnimations();
-    gameText = this.add.text(50, 140, "", { fontFamily: 'Arial', fontSize: '25px', color:'#FF0000' }).setScrollFactor(0,0);
+    gameText = this.add.text(50, 140, "", { fontFamily: 'Arial', fontSize: '20px', color:'#FF0000' }).setScrollFactor(0,0);
     
 
     // user input
@@ -201,39 +201,20 @@ class WorldScene extends Phaser.Scene {
             me.player.setTint(0x808080);
           }
         }, 100)
-        // this.container.health -= 50;
-        // console.log(this.container.health);
-        // playerInfo.health -= 50;
-        // console.log(playerInfo.health);
+
         if (playerInfo.health <= 0) {
           this.container.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
           this.container.x = playerInfo.respawn_x;
           this.container.y = playerInfo.respawn_y;
           playerInfo.health = 100;
-          // green_bar.displayOriginX = 100;
-          // console.log("respawn me");
+          gameText.setText("Killed by: " + shooterInfo.username);
+          setTimeout(function(){
+            gameText.setText("");
+          }, 2000)
         }
-        // console.log(playerInfo.health)
-        // console.log(green_bar.displayWidth);
+
         green_bar.setScale((playerInfo.health / 100)*0.75, 0.75);// adjusts bar to proper width
-        // console.log("green bar x origin: "+green_bar.displayOriginX);
-        // console.log("red bar x origin: "+red_bar.displayOriginX);
 
-
-        // console.log("green bar width: "+green_bar.displayWidth);
-        // console.log("red bar width: "+red_bar.displayWidth);
-
-        // green_bar.displayOriginX += ((20/100)*150)-1;
-
-        // figure out how to adjust x posn of bar to proper position
-
-        // console.log("preadjustment origin: "+green_bar.displayOriginX);
-        // // set the green bar x value to the appropirate position after scaling
-        // green_bar.displayOriginX += (playerInfo.health/100)*0.75*15;
-        // console.log("origin is: " + green_bar.displayOriginX);
-        // console.log(green_bar.displayWidth);
-        // green_bar.width -= 50;
-        // need some sort of text for this user being killed
         
       } else {
         this.otherPlayers.getChildren().forEach(function (player) { // update all other players of respawning player
@@ -275,16 +256,7 @@ class WorldScene extends Phaser.Scene {
       }
     }.bind(this));
 
-    this.socket.on('death', function(playerInfo, killer){ // move to player class
-      if (playerInfo.playerId == this.socket.id) { 
-        console.log("death")
-        gameText.setText("Killed by: " + killer);
-        setTimeout(function(){
-          gameText.setText("");
-        }, 2000)
-      }
-
-    }.bind(this));
+    
   }
 
   redirect(socket){

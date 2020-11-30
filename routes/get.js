@@ -10,7 +10,6 @@ router.get('/', function (req, res) {
   var game_id = parseInt(req.query.game_id)
   
   if(!Number.isInteger(user_id) || !Number.isInteger(game_id)){
-    console.log("nan")
     return res.render('./index.html');
   }
   
