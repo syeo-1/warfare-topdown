@@ -1,16 +1,40 @@
 const express = require('express');
 const router = express.Router();
 const query = require("../queryPool");
-const waitingQueue = require("../waitingQueue")
+
+
+
 
 router.get('/', function (req, res) {
-  res.render('./index.html');
+  var user_id = parseInt(req.query.user_id)
+  var game_id = parseInt(req.query.game_id)
+  
+  if(!Number.isInteger(user_id) || !Number.isInteger(game_id)){
+    console.log("nan")
+    return res.render('./index.html');
+  }
+  
+  text = `with a as (select user_id from users inner join games on users.game_id = games.game_id where user_id = $1 and users.game_id = $2 and state = 'finished')
+  delete from users where user_id in (select * from a)`;
+  values = [user_id, game_id];
+  query(text, values, (err, result) => {
+    if (err) return res.status(500).send(err)
+    res.render('./index.html');
+  })
 });
 
 
 router.get('/game', function (req, res) {
+  var user_id = parseInt(req.query.user_id)
+  var game_id = parseInt(req.query.game_id)
+  
+  if(!Number.isInteger(user_id) || !Number.isInteger(game_id)){
+    console.log("nan")
+    return res.render('./index.html');
+  }
+
   text = "select * from users where user_id = $1 and game_id = $2";
-  values = [req.query.user_id, req.query.game_id];
+  values = [user_id, game_id];
   query(text, values, (err, result) => { // postgres database test
     if (err) return res.status(500).send(err)
     if(result.rowCount > 0){ // user and game exists, admit to game
@@ -31,9 +55,16 @@ router.get('/game', function (req, res) {
 
 
 router.get('/post_game', function (req, res) {
+  var user_id = parseInt(req.query.user_id)
+  var game_id = parseInt(req.query.game_id)
+  
+  if(!Number.isInteger(user_id) || !Number.isInteger(game_id)){
+    console.log("nan")
+    return res.render('./index.html');
+  }
   
   text = "select * from users inner join games on users.game_id = games.game_id where games.game_id = $1 and state = 'finished';"
-  values = [req.query.game_id];
+  values = [game_id];
   query(text, values, (err, result) => { // postgres database test
     if (err) return res.status(500).send(err)
     if(result.rowCount > 0){ // user and game exists

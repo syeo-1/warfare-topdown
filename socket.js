@@ -86,7 +86,7 @@ exports = module.exports = function(io){
                     
                     text  = `update games set state = 'started' where game_id = $1;`
                     values = [data.game_id]
-                    query(text, values, (err, result) => { // postgres database test
+                    query(text, values, (err, result) => { 
                         if (err) return console.log(err)
                         io.emit('startGame');
                         setTimeout(function(){
@@ -142,7 +142,7 @@ exports = module.exports = function(io){
             console.log('user disconnected: ', socket.id);
             var text = "select * from users inner join games on users.game_id = games.game_id where socket_id = $1"
             var values = [socket.id]
-            query(text, values, (err, result) => { // postgres database test
+            query(text, values, (err, result) => { 
                 if (err) {
                     console.log(err)
                     return res.status(500).send(err)
@@ -178,7 +178,7 @@ exports = module.exports = function(io){
                     where games.game_id = $2;`
                     values = [user.user_id, user.game_id]
                 }
-                query(text, values, (err, result) => { // postgres database test
+                query(text, values, (err, result) => { 
                     if (err) {
                         return console.log(err)
                     }
