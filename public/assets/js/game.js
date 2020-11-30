@@ -6,9 +6,44 @@ import Leaderboard from "/assets/js/leaderboard.js";
 
 let projectiles = [];// store projectiles in array client side for now
 var gameStarted = false;
+let barrier_locations = [
+  {x:125, y:0},
+  {x:125, y:30},
+  {x:125, y:50},
+  {x:125, y:70},
+  {x:125, y:90},
+  {x:125, y:110},
+  {x:125, y:130},
+  {x:125, y:150},
+  {x:125, y:170},
+  {x:125, y:190},
+  {x:145, y:190},
+  {x:165, y:190},
+  {x:185, y:190},
+  {x:205, y:190},
+  {x:225, y:190},
+  {x:245, y:190},
+  {x:265, y:190},
+  {x:285, y:190},
+  {x:305, y:190},
+  {x:325, y:190},
+
+  // team barriers
+  {x:125, y:300},
+  {x:125, y:320},
+  {x:125, y:340},
+  {x:400, y:300},
+  {x:400, y:320},
+  {x:400, y:340},
+
+  // barrier scatterings
+  {x:260, y: 265},
+  {x:260, y: 370},
+  {x:193, y: 420},
+  {x:330, y: 420},
+];
 
 let player_health;
-let full_health = 100;
 
 let red_bar;
 let green_bar;
@@ -40,6 +75,9 @@ class BootScene extends Phaser.Scene {
       this.load.image('worm', 'assets/images/giant-worm.png');
       this.load.image('wolf', 'assets/images/wolf.png');
       this.load.image('sword', 'assets/images/attack-icon.png');
+
+      // for the barriers
+      this.load.image('barrier', 'assets/images/brick.png');
 
       // load small projectile image
       this.load.image('small_projectile', 'assets/images/small_projectile.png');
@@ -111,7 +149,7 @@ class WorldScene extends Phaser.Scene {
       
     }.bind(this))
     // create enemies
-    this.createEnemies();
+    this.createBarriers();
     // listen for web socket events
     this.socket.on('currentPlayers', function (players) {
       Object.keys(players).forEach(function (id) {
@@ -147,13 +185,11 @@ class WorldScene extends Phaser.Scene {
     // wait for projectile updates from players
     this.socket.on('updateProjectiles', function(server_projectiles) {
       // create projectiles. must keep in sync with server
-      // console.log("client updated by server")
       for (let i = 0 ; i < server_projectiles.length ; i++) { // not enough
         if (projectiles[i] == undefined) {
           let proj_sprite = this.add.sprite(server_projectiles[i].x, server_projectiles[i].y, 'small_projectile');
           proj_sprite.setScale(0.5);
           projectiles[i] = proj_sprite;
-          // projectiles[i] = this.add.sprite(server_projectiles[i].x, server_projectiles[i].y, 'small_projectile');
 
         } else {
           projectiles[i].x = server_projectiles[i].x;
@@ -168,60 +204,27 @@ class WorldScene extends Phaser.Scene {
       }
     }.bind(this));
 
-
-    
-
     // wait for projectile hits from players
     this.socket.on('playerDamaged', function(playerInfo) {
       if (playerInfo.playerId == this.socket.id) { // this player was killed -> respawn player
-        // this.container.health -= 50;
-        // console.log(this.container.health);
-        // playerInfo.health -= 50;
-        // console.log(playerInfo.health);
         if (playerInfo.health <= 0) {
           this.container.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
           this.container.x = playerInfo.respawn_x;
           this.container.y = playerInfo.respawn_y;
           playerInfo.health = 100;
-          // green_bar.displayOriginX = 100;
-          // console.log("respawn me");
         }
-        // console.log(playerInfo.health)
-        // console.log(green_bar.displayWidth);
         green_bar.setScale((playerInfo.health / 100)*0.75, 0.75);// adjusts bar to proper width
-        // console.log("green bar x origin: "+green_bar.displayOriginX);
-        // console.log("red bar x origin: "+red_bar.displayOriginX);
-
-
-        // console.log("green bar width: "+green_bar.displayWidth);
-        // console.log("red bar width: "+red_bar.displayWidth);
-
-        // green_bar.displayOriginX += ((20/100)*150)-1;
-
-        // figure out how to adjust x posn of bar to proper position
-
-        // console.log("preadjustment origin: "+green_bar.displayOriginX);
-        // // set the green bar x value to the appropirate position after scaling
-        // green_bar.displayOriginX += (playerInfo.health/100)*0.75*15;
-        // console.log("origin is: " + green_bar.displayOriginX);
-        // console.log(green_bar.displayWidth);
-        // green_bar.width -= 50;
-        // need some sort of text for this user being killed
         
       } else {
         this.otherPlayers.getChildren().forEach(function (player) { // update all other players of respawning player
           if (playerInfo.playerId === player.playerId) {
             player.health -= 20;
-            // console.log(player.health);
-            // console.log(playerInfo.health);
             if (playerInfo.health <= 0) {
               player.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
               player.x = playerInfo.respawn_x;
               player.y = playerInfo.respawn_y;
               playerInfo.health = 100;
-              // console.log("respawn");
             }
-            // console.log("shot?");
           }
           
         }.bind(this));
@@ -348,24 +351,21 @@ addOtherPlayers(playerInfo) {
     
   }
 
-  createEnemies() {
-    // where the enemies will be
+  createBarriers() {
+    // where the barriers will be
     this.spawns = this.physics.add.group({
       classType: Phaser.GameObjects.Sprite
     });
-    for (let i = 0; i < 20; i++) {
-      const location = this.getValidLocation();
+    for (let i = 0; i < barrier_locations.length; i++) {
+      const location = barrier_locations[i];//this.getValidLocation();
       // parameters are x, y, width, height
-      let enemy = this.spawns.create(location.x, location.y, this.getEnemySprite());
+      let enemy = this.spawns.create(location.x, location.y, 'barrier');
+      // save the location.x and location.y value to an array of xy value pairs of the barriers
       enemy.body.setCollideWorldBounds(true);
       enemy.body.setImmovable();
     }
   }
 
-  getEnemySprite() {
-    let sprites = ['golem', 'ent', 'demon', 'worm', 'wolf'];
-    return sprites[Math.floor(Math.random() * sprites.length)];
-  }
 
   getValidLocation() {
     let validLocation = false;
@@ -385,12 +385,6 @@ addOtherPlayers(playerInfo) {
     return { x, y };
   }
 
-  onMeetEnemy(player, zone) {
-    // we move the zone to some other location
-    zone.x = Phaser.Math.RND.between(0, this.physics.world.bounds.width);
-    zone.y = Phaser.Math.RND.between(0, this.physics.world.bounds.height);
-  }
-
 
   update() {
     if (this.container) {
@@ -398,14 +392,11 @@ addOtherPlayers(playerInfo) {
 
       // shooting
       if (this.input.mousePointer.isDown && !this.shooting) {
-        // console.log("mouse click is registering");
         
         
         // get player's canvas location
         let player_canvas_location_x = this.container.x - this.cameras.main.scrollX;
         let player_canvas_location_y = this.container.y - this.cameras.main.scrollY;
-        // console.log("player canvas x: " + player_canvas_location_x);
-        // console.log("player canvas y: " + player_canvas_location_y);
 
         // // get the mouse click location in canvas
         let mouse_x = this.input.mousePointer.x;
@@ -413,16 +404,11 @@ addOtherPlayers(playerInfo) {
 
         // only do things if the click is within the canvas area
         if ((mouse_x >= 0 && mouse_x <= 320) && (mouse_y >= 0 && mouse_y <= 240)) {
-          // console.log("mouse location x: "+mouse_x)
-          // console.log("mouse location y: "+mouse_y)
 
           let relative_click_x = mouse_x - player_canvas_location_x;
           let relative_click_y = mouse_y - player_canvas_location_y;
 
-          // console.log("relative click location x: "+relative_click_x)
-          // console.log("relative click location y: "+relative_click_y)
 
-          //LINES DIRECTLY BELOW ARE SUPER IMPORTANT
           if (relative_click_x === 0) { // prevent zero division error for arctan calculation
             relative_click_x = Number.MIN_VALUE;
           }
@@ -450,31 +436,15 @@ addOtherPlayers(playerInfo) {
             theta = 0;
           }
 
-          // if you're clicking at 0,0 (where the character is), nothing should happen
-
           // calculate the x and y velocity of the bullet. Ensure overall speed is always 5 units
-          // console.log("theta: " + theta)
           let x_velo = 5 * Math.cos(theta);
           let y_velo = 5 * Math.sin(theta);
-          // console.log("x velocity is: "+ x_velo);
-          // console.log("y velocity is: "+ y_velo);
 
-          // // create the projectile with the proper velocity and display in the map/canvas
-          // let projectile = {};
-          // projectile.x_velo = x_velo;
-          // projectile.y_velo = y_velo;
-          
           // store time projectile was created so know when to remove projectile
           let date = new Date();// for ensuring projectile has limited range
           let fire_time = date.getTime();
-          // console.log("firetime: " + projectile.fire_time.toString());
-          // projectile.sprite = this.add.sprite(
-          //   this.container.x + projectile.x_velo,
-          //   this.container.y + projectile.y_velo,
-          //   'small_projectile'
-          // );
-          // // add to projectile array
-          // projectiles.push(projectile);
+
+          // add to projectile array server side
           this.socket.emit('playerShooting', {
             x: this.container.x,
             y: this.container.y,
@@ -482,22 +452,13 @@ addOtherPlayers(playerInfo) {
             y_velo: y_velo,
             fire_time: fire_time
           })
-          // console.log("bullet has been shot");
           this.shooting = true;
 
         }
       } 
       if (!this.input.mousePointer.isDown) {
-        // console.log("not shooting");
-        // console.log(this.shooting)
         this.shooting = false;
       }
-
-      // update the health bar if player has been damaged
-      // green_bar.scale.setTo(this.container.health / 100, 0.75);
-      // console.log(this.container);
-
-      
 
       // Horizontal movement
       if (this.cursors.left.isDown) {
@@ -568,19 +529,5 @@ let config = {
     Leaderboard
   ]
 };
-//added projectile updater function
-
 
 let game = new Phaser.Game(config);
-
-// function render() {
-
-//   game.debug.cameraInfo(game.camera, 500, 32);
-//   game.debug.spriteInfo(card, 32, 32);
-
-//   game.debug.text('Click to toggle sprite / camera movement with cursors', 32, 550);
-
-// }
-
-// console.log(game.camera.x)
-  
