@@ -176,6 +176,17 @@ class WorldScene extends Phaser.Scene {
     this.socket.on('playerMoved', function (playerInfo) {
       this.otherPlayers.getChildren().forEach(function (player) {
         if (playerInfo.playerId === player.playerId) {
+          if (playerInfo.key_pressed == 'left') {
+            player.anims.play('left', true);
+          } else if (playerInfo.key_pressed == 'right') {
+            player.anims.play('right', true);
+          } else if (playerInfo.key_pressed == 'up') {
+            player.anims.play('up', true);
+          } else if (playerInfo.key_pressed == 'down') {
+            player.anims.play('down', true);
+          } else {
+            player.anims.stop();
+          }
           player.flipX = playerInfo.flipX;
           player.setPosition(playerInfo.x, playerInfo.y);
         }
@@ -205,8 +216,30 @@ class WorldScene extends Phaser.Scene {
     }.bind(this));
 
     // wait for projectile hits from players
-    this.socket.on('playerDamaged', function(playerInfo) {
+    this.socket.on('playerDamaged', function(playerInfo, shooterInfo) {
+      
+      this.otherPlayers.getChildren().forEach(function (player) {
+        if (playerInfo.playerId === player.playerId) {
+          
+        }
+      }.bind(this));
       if (playerInfo.playerId == this.socket.id) { // this player was killed -> respawn player
+        this.player.setTint(0xFF0000);
+        var me = this
+        setTimeout(function(){
+          if(playerInfo.team == 'A'){
+            console.log("a")
+            me.player.setTint(0x0000FF);
+          }
+          else{
+            console.log("b")
+            me.player.setTint(0x808080);
+          }
+        }, 100)
+        // this.container.health -= 50;
+        // console.log(this.container.health);
+        // playerInfo.health -= 50;
+        // console.log(playerInfo.health);
         if (playerInfo.health <= 0) {
           this.container.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
           this.container.x = playerInfo.respawn_x;
@@ -219,12 +252,24 @@ class WorldScene extends Phaser.Scene {
         this.otherPlayers.getChildren().forEach(function (player) { // update all other players of respawning player
           if (playerInfo.playerId === player.playerId) {
             player.health -= 20;
+            player.setTint(0xFF0000);
+            setTimeout(function(){
+              if(playerInfo.team == 'A'){
+                player.setTint(0x0000FF);
+              }
+              else{
+                player.setTint(0x808080);
+              }
+            }, 100)
+            
             if (playerInfo.health <= 0) {
               player.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
               player.x = playerInfo.respawn_x;
               player.y = playerInfo.respawn_y;
               playerInfo.health = 100;
             }
+            
+            // console.log("shot?");
           }
           
         }.bind(this));
@@ -311,7 +356,7 @@ createPlayer(playerInfo) {
     this.player.setTint(0x0000FF);
   }
   else{
-    this.player.setTint(0xFF0000);
+    this.player.setTint(0x808080);
   }
 
   this.container = this.add.container(playerInfo.x, playerInfo.y);
@@ -335,7 +380,7 @@ addOtherPlayers(playerInfo) {
     otherPlayer.setTint(0x0000FF);
   }
   else{
-    otherPlayer.setTint(0xFF0000);
+    otherPlayer.setTint(0x808080);
   }
   
   otherPlayer.playerId = playerInfo.playerId;
@@ -474,17 +519,22 @@ addOtherPlayers(playerInfo) {
         this.container.body.setVelocityY(80);
       }
 
+      var key_pressed = ''
       // Update the animation last and give left/right animations precedence over up/down animations
       if (this.cursors.left.isDown) {
         this.player.anims.play('left', true);
         this.player.flipX = true;
+        key_pressed = 'left';
       } else if (this.cursors.right.isDown) {
         this.player.anims.play('right', true);
         this.player.flipX = false;
+        key_pressed = 'right';
       } else if (this.cursors.up.isDown) {
         this.player.anims.play('up', true);
+        key_pressed = 'up';
       } else if (this.cursors.down.isDown) {
         this.player.anims.play('down', true);
+        key_pressed = 'down';
       } else {
         this.player.anims.stop();
       }
@@ -494,7 +544,7 @@ addOtherPlayers(playerInfo) {
       let y = this.container.y;
       let flipX = this.player.flipX;
       if (this.container.oldPosition && (x !== this.container.oldPosition.x || y !== this.container.oldPosition.y || flipX !== this.container.oldPosition.flipX)) {
-        this.socket.emit('playerMovement', { x, y, flipX });
+        this.socket.emit('playerMovement', { x, y, flipX, key_pressed });
       }
       // save old position data
       this.container.oldPosition = {

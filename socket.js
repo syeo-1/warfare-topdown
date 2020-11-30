@@ -91,6 +91,7 @@ exports = module.exports = function(io){
                     username: socket.id, // dont push to master -> result.rows[0].username
                     kills: 0,
                     deaths: 0,
+                    key_pressed: ""
                 };
                 
                 //update database that user is in game now
@@ -200,12 +201,14 @@ exports = module.exports = function(io){
         // when a plaayer moves, update the player data
         socket.on('playerMovement', function (movementData) {
             //sometimes this data comes in as undefined? bug with phasor.js
-            if(typeof movementData.x === 'undefined' || typeof movementData.y === 'undefined'){
+            
+            if(typeof players[socket.id] === 'undefined'){
                 return
             }
             players[socket.id].x = movementData.x;
             players[socket.id].y = movementData.y;
             players[socket.id].flipX = movementData.flipX;
+            players[socket.id].key_pressed = movementData.key_pressed;
             // emit a message to all players about the player that moved
             socket.broadcast.emit('playerMoved', players[socket.id]);
         });
@@ -264,13 +267,17 @@ exports = module.exports = function(io){
                         
                         players[player_id].health -= 20;
 
-
-                        io.emit('playerDamaged', players[player_id]);
+                        if(players[player_id].team == players[cur_projectile.player].team){ // target and shooter on same team, ignore
+                            return
+                        }
+                        io.emit('playerDamaged', players[player_id], players[cur_projectile.player]);
 
 
                         if (players[player_id].health <= 0) {
                             players[cur_projectile.player].kills += 1;
+                            io.emit('kill', players[cur_projectile.player]);
                             players[player_id].deaths += 1;
+                            io.emit('death', players[player_id]);
                             players[player_id].x = players[player_id].respawn_x;
                             players[player_id].y = players[player_id].respawn_y;
                             players[player_id].health = 100;
