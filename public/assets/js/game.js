@@ -79,7 +79,7 @@ class WorldScene extends Phaser.Scene {
 
     // create player animations
     this.createAnimations();
-    gameText = this.add.text(140, 140, "", { fontFamily: 'Arial', fontSize: '25px', color:'#FF0000' });
+    gameText = this.add.text(50, 140, "", { fontFamily: 'Arial', fontSize: '25px', color:'#FF0000' }).setScrollFactor(0,0);
     
 
     // user input
