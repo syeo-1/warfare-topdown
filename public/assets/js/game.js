@@ -345,7 +345,7 @@ class Game extends Phaser.Scene {
     this.socket.on('startGame', function(vars) {
       setTimeout(function(){
         gameStarted = true;
-      }, 5000)
+      }, 2000)
     }.bind(this));
   }
 
