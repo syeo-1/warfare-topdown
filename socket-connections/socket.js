@@ -1,5 +1,5 @@
-const query = require("./queryPool");
-const waitingQueue = require("./waitingQueue")
+const query = require("../database/queryPool");
+const waitingQueue = require("../helpers/waitingQueue")
 
 const players = {};
 const projectiles = [];
@@ -79,17 +79,17 @@ exports = module.exports = function(io){
                 
                 // create a new player 
                 players[socket.id] = {
+                    socket_id: socket.id,
+                    user_id: data.user_id,
+                    game_id: data.game_id,
+                    username: result.rows[0].username,
                     flipX: false,
                     respawn_x: x,
                     respawn_y: y,
                     health: 100,
                     x: x,
                     y: y, // spread out new users
-                    playerId: socket.id,
                     team: team,
-                    user_id: data.user_id,
-                    game_id: data.game_id,
-                    username: result.rows[0].username,
                     kills: 0,
                     deaths: 0,
                     key_pressed: ""
@@ -156,8 +156,8 @@ exports = module.exports = function(io){
                                     io.emit('endGame', players);
                                     
                                 })
-                            }, 15000)
-                        }, 5000)
+                            }, 20000) // set to 8:00
+                        }, 2000) // set to 0:10
                         
                     })
                     

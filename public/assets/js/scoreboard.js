@@ -20,42 +20,47 @@ class Scoreboard extends Phaser.Scene {
   create() {
 
     this.socket = io();
-    this.initialTime = 15; // 2:30
-    this.countDownTime = 5; // 2:30
+    this.initialTime = 20; // 8:00
+    this.countDownTime = 2; // 0:10
 
     clockText = this.add.text(140, 5, this.formatTime(this.initialTime), { fontFamily: 'Arial', fontSize: '14px', color:'#000000' });
     countDownText = this.add.text(10, 100, "WAITING: " + this.formatTime(this.countDownTime), { fontFamily: 'Arial', fontSize: '28px', color:'#FF0000' });
+    teamA_text = this.add.text(5, 5, 'Team A Score: 0', { fontFamily: 'Arial', fontSize: '14px', color:'#0000FF' }).setScrollFactor(0,0);
+    teamB_text = this.add.text(195, 5, 'Team B Score: 0', { fontFamily: 'Arial', fontSize: '14px', color:'#D3D3D3' }).setScrollFactor(0,0);
+    teamA_text.setResolution(10);
+    teamB_text.setResolution(10);
     
-    
-    this.socket.on('startGame', function(){
-      id_countdown = setInterval(function(){
-        this.updateCountdown()
-      }.bind(this), 1000);
-    }.bind(this));
+    this.startGame()
+    this.startGameClock()
+    this.updateLeaderboard()
+  }
 
-    
+  updateLeaderboard(){
+    this.socket.on('updateLeaderboard', function(playerInfo) {
+      if (playerInfo.shooter.team === "A") {
+        teamA_killcount++;
+      } 
+      else if (playerInfo.shooter.team === "B") {
+        teamB_killcount++;
+      }
+      teamA_text.setText("Team A Score: " + (teamA_killcount * kill_multiplier).toString());
+      teamB_text.setText("Team B Score: "+ (teamB_killcount * kill_multiplier).toString());
+  }.bind(this));
+  }
 
-
+  startGameClock(){
     this.socket.on('startGameClock', function(){
       id = setInterval(function(){
         this.updateTimer()
       }.bind(this), 1000);
     }.bind(this));
+  }
 
-    teamA_text = this.add.text(5, 5, 'Team A Score: 0', { fontFamily: 'Arial', fontSize: '14px', color:'#0000FF' }).setScrollFactor(0,0);
-    teamB_text = this.add.text(195, 5, 'Team B Score: 0', { fontFamily: 'Arial', fontSize: '14px', color:'#D3D3D3' }).setScrollFactor(0,0);
-    teamA_text.setResolution(10);
-    teamB_text.setResolution(10);
-
-    this.socket.on('updateLeaderboard', function(playerInfo) {
-        if (playerInfo.shooter.team === "A") {
-          teamA_killcount++;
-        } 
-        else if (playerInfo.shooter.team === "B") {
-          teamB_killcount++;
-        }
-        teamA_text.setText("Team A Score: " + (teamA_killcount * kill_multiplier).toString());
-        teamB_text.setText("Team B Score: "+ (teamB_killcount * kill_multiplier).toString());
+  startGame(){
+    this.socket.on('startGame', function(){
+      id_countdown = setInterval(function(){
+        this.updateCountdown()
+      }.bind(this), 1000);
     }.bind(this));
   }
 

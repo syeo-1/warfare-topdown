@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const query = require("../queryPool");
-const waitingQueue = require("../waitingQueue")
+const query = require("../database/queryPool");
+const waitingQueue = require("../helpers/waitingQueue")
 
 router.post('/add_new_user', function (req, res) {
     var size = waitingQueue.getSize()

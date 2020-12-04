@@ -4,8 +4,14 @@ let game_id = document.getElementById("code").getAttribute("game_id");
 
 import Scoreboard from "/assets/js/scoreboard.js";
 
-let projectiles = [];// store projectiles in array client side for now
+// store projectiles in array client side for now
 var gameStarted = false;
+var projectiles = [];
+let red_bar;
+let green_bar;
+let healthbar_label;
+var gameText;
+
 let barrier_locations = [
   {x:125, y:0},
   {x:125, y:30},
@@ -43,18 +49,11 @@ let barrier_locations = [
   {x:330, y: 420},
 ];
 
-let player_health;
 
-let red_bar;
-let green_bar;
-let healthbar_label;
-var gameText;
-
-
-class BootScene extends Phaser.Scene {
+class PreGame extends Phaser.Scene {
     constructor() {
       super({
-        key: 'BootScene',
+        key: 'PreGame',
         active: true
       });
     }
@@ -65,17 +64,10 @@ class BootScene extends Phaser.Scene {
       // map in json format
       this.load.tilemapTiledJSON('map', 'assets/map/map.json');
       // our two characters
-      this.load.spritesheet('player', 'assets/RPG_assets.png', {
+      this.load.spritesheet('player', 'assets/players/RPG_assets.png', {
         frameWidth: 16,
         frameHeight: 16
       });
-  
-      this.load.image('golem', 'assets/images/coppergolem.png');
-      this.load.image('ent', 'assets/images/dark-ent.png');
-      this.load.image('demon', 'assets/images/demon.png');
-      this.load.image('worm', 'assets/images/giant-worm.png');
-      this.load.image('wolf', 'assets/images/wolf.png');
-      this.load.image('sword', 'assets/images/attack-icon.png');
 
       // for the barriers
       this.load.image('barrier', 'assets/images/brick.png');
@@ -89,14 +81,14 @@ class BootScene extends Phaser.Scene {
     }
   
     create() {
-      this.scene.start('WorldScene');
+      this.scene.start('Game');
     }
 }
   
-class WorldScene extends Phaser.Scene {
+class Game extends Phaser.Scene {
   constructor() {
     super({
-      key: 'WorldScene'
+      key: 'Game'
     });
   }
 
@@ -104,104 +96,43 @@ class WorldScene extends Phaser.Scene {
     this.socket = io();
     let data = {user_id: user_id, game_id: game_id}
     this.socket.emit("new_player", data)
-    this.otherPlayers = this.physics.add.group();
+    this.gamePlayers = this.physics.add.group();
 
 
-    this.redirect(this.socket);
-    this.endGame(this.socket);
-
-    // create map
-    this.createMap();
-
-
-
-    // create player animations
-    this.createAnimations();
     
+    this.createMap(); // create map singleton
+    this.startGame();
+    this.endGame();
+    this.redirect();
+    this.currentPlayers()
+    this.newPlayer()
+    this.userDisconnect()
+    this.playerMoved()
+    this.updateProjectiles()
+    this.playerDamaged()
+    this.killPlayer()
 
-    // create barriers
-    this.createBarriers();
     
+  }
 
-    // user input
-    this.cursors = this.input.keyboard.createCursorKeys();
-    this.cursors = this.input.keyboard.addKeys({up:Phaser.Input.Keyboard.KeyCodes.W, down:Phaser.Input.Keyboard.KeyCodes.S, left:Phaser.Input.Keyboard.KeyCodes.A, right:Phaser.Input.Keyboard.KeyCodes.D});
-    
-    // initialize player heatlh
-    player_health = 100;
-
-    // create health bar
-    red_bar = this.add.image(90, 225, 'red_bar');
-    red_bar.setScrollFactor(0,0);
-    red_bar.setScale(0.75);
-    // red_bar.setOrigin(0.5);
-
-    green_bar = this.add.image(15, 218, 'green_bar');
-    green_bar.setScrollFactor(0,0);
-    green_bar.setScale(0.75);
-    green_bar.setOrigin(0);
-
-    // bar label
-    healthbar_label = this.add.text(15, 200, 'Player Health', {fontFamily: 'Arial', fontSize: '14px'});
-    healthbar_label.setScrollFactor(0,0);
-    healthbar_label.setResolution(10);
-
-    gameText = this.add.text(50, 140, "", { fontFamily: 'Arial', fontSize: '20px', color:'#FF0000' }).setScrollFactor(0,0);
-
-    this.socket.on('startGame', function () {
-      setTimeout(function(){
-        gameStarted = true;
-      }, 5000)
-      
-      
-    }.bind(this))
-    
-    // listen for web socket events
-    this.socket.on('currentPlayers', function (players) {
-      Object.keys(players).forEach(function (id) {
-        if (players[id].playerId === this.socket.id) {
-          this.createPlayer(players[id]);
-        } else {
-          this.addOtherPlayers(players[id]);
-        }
-      }.bind(this));
+  killPlayer(){
+    this.socket.on('kill', function(playerInfo, killed){ // move to player class
+      console.log(this.socket.id)
+      if (playerInfo.socket_id == this.socket.id) { 
+        
+        gameText.setText("You Killed: " + killed);
+        setTimeout(function(){
+          gameText.setText("");
+        }, 2000)
+      }
     }.bind(this));
-  
-    this.socket.on('newPlayer', function (playerInfo) {
-      this.addOtherPlayers(playerInfo);
-    }.bind(this))
+  }
 
-    this.socket.on('disconnect', function (playerId) {
-      this.otherPlayers.getChildren().forEach(function (player) {
-        if (playerId === player.playerId) {
-          player.destroy();
-        }
-      }.bind(this));
-    }.bind(this));
-
-    this.socket.on('playerMoved', function (playerInfo) {
-      this.otherPlayers.getChildren().forEach(function (player) {
-        if (playerInfo.playerId === player.playerId) {
-          if (playerInfo.key_pressed == 'left') {
-            player.anims.play('left', true);
-          } else if (playerInfo.key_pressed == 'right') {
-            player.anims.play('right', true);
-          } else if (playerInfo.key_pressed == 'up') {
-            player.anims.play('up', true);
-          } else if (playerInfo.key_pressed == 'down') {
-            player.anims.play('down', true);
-          } else {
-            player.anims.stop();
-          }
-          player.flipX = playerInfo.flipX;
-          player.setPosition(playerInfo.x, playerInfo.y);
-        }
-      }.bind(this));
-    }.bind(this));
-
+  updateProjectiles(){
     // wait for projectile updates from players
     this.socket.on('updateProjectiles', function(server_projectiles) {
       // create projectiles. must keep in sync with server
+      
       for (let i = 0 ; i < server_projectiles.length ; i++) { // not enough
         if (projectiles[i] == undefined) {
           let proj_sprite = this.add.sprite(server_projectiles[i].x, server_projectiles[i].y, 'small_projectile');
@@ -220,12 +151,12 @@ class WorldScene extends Phaser.Scene {
         i--;
       }
     }.bind(this));
+  }
 
+  playerDamaged(){
     // wait for projectile hits from players
     this.socket.on('playerDamaged', function(playerInfo, shooterInfo) {
-      
-  
-      if (playerInfo.playerId == this.socket.id) { // this player was killed -> respawn player
+      if (playerInfo.socket_id == this.socket.id) { // this player was killed -> respawn player
         this.player.setTint(0xFF0000);
         var me = this
         setTimeout(function(){
@@ -252,10 +183,10 @@ class WorldScene extends Phaser.Scene {
 
         green_bar.setScale((playerInfo.health / 100)*0.75, 0.75);// adjusts bar to proper width
 
-        
-      } else {
-        this.otherPlayers.getChildren().forEach(function (player) { // update all other players of respawning player
-          if (playerInfo.playerId === player.playerId) {
+      } 
+      else {
+        this.gamePlayers.getChildren().forEach(function (player) { // update all other players of respawning player
+          if (playerInfo.socket_id === player.socket_id) {
             player.health -= 20;
             player.setTint(0xFF0000);
             setTimeout(function(){
@@ -280,36 +211,46 @@ class WorldScene extends Phaser.Scene {
         }.bind(this));
       }
     }.bind(this));
+  }
 
-    this.socket.on('kill', function(playerInfo, killed){ // move to player class
-      console.log(this.socket.id)
-      if (playerInfo.playerId == this.socket.id) { 
-        
-        gameText.setText("You Killed: " + killed);
-        setTimeout(function(){
-          gameText.setText("");
-        }, 2000)
-      }
+  playerMoved(){
+    this.socket.on('playerMoved', function (playerInfo) {
+      this.gamePlayers.getChildren().forEach(function (player) {
+        if (playerInfo.socket_id === player.socket_id) {
+          if (playerInfo.key_pressed == 'left') {
+            player.anims.play('left', true);
+          } else if (playerInfo.key_pressed == 'right') {
+            player.anims.play('right', true);
+          } else if (playerInfo.key_pressed == 'up') {
+            player.anims.play('up', true);
+          } else if (playerInfo.key_pressed == 'down') {
+            player.anims.play('down', true);
+          } else {
+            player.anims.stop();
+          }
+          player.flipX = playerInfo.flipX;
+          player.setPosition(playerInfo.x, playerInfo.y);
+        }
+      }.bind(this));
     }.bind(this));
-
-    
   }
 
-  redirect(socket){
-    socket.on('redirect', function(destination) {
-        window.location.href = destination;
-    });
+  userDisconnect(){
+    this.socket.on('disconnect', function (socket_id) {
+      this.gamePlayers.getChildren().forEach(function (player) {
+        if (socket_id === player.socket_id) {
+          player.destroy();
+        }
+      }.bind(this));
+    }.bind(this));
+  }
+  newPlayer(){
+    this.socket.on('newPlayer', function (playerInfo) {
+      this.addGamePlayers(playerInfo);
+    }.bind(this))
   }
 
-  endGame(socket){
-    socket.on('endGame', function(vars) {
-      //update database here with user + game stats and then nav to game stats page
-        gameStarted = false
-        window.location.href = "/post_game?game_id=" + game_id + "&user_id=" + user_id;
-    });
-  }
-
-  createMap() {
+  createMap() { // singleton
     // create the map
     this.map = this.make.tilemap({
       key: 'map'
@@ -325,9 +266,7 @@ class WorldScene extends Phaser.Scene {
     // don't go out of the map
     this.physics.world.bounds.width = this.map.widthInPixels;
     this.physics.world.bounds.height = this.map.heightInPixels;
-  }
 
-  createAnimations() {
     //  animation with key 'left', we don't need left and right as we will use one and flip the sprite
     this.anims.create({
       key: 'left',
@@ -365,61 +304,11 @@ class WorldScene extends Phaser.Scene {
       frameRate: 10,
       repeat: -1
     });
-  }
-
- 
-createPlayer(playerInfo) {
-  // our player sprite created through the physics system
-  this.player = this.add.sprite(0, 0, 'player', 6);
-  if(playerInfo.team == 'A'){
-    this.player.setTint(0x0000FF);
-  }
-  else{
-    this.player.setTint(0x808080);
-  }
-
-  this.container = this.add.container(playerInfo.x, playerInfo.y);
-  this.container.setSize(16, 16);
-  this.physics.world.enable(this.container);
-  this.container.add(this.player);
-
-  // update camera
-  this.updateCamera();
-
-  // don't go out of the map
-  this.container.body.setCollideWorldBounds(true);
-
-  this.physics.add.collider(this.container, this.spawns);
-}
-
-
-addOtherPlayers(playerInfo) {
-  const otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'player', 9);
-  if(playerInfo.team == 'A'){
-    otherPlayer.setTint(0x0000FF);
-  }
-  else{
-    otherPlayer.setTint(0x808080);
-  }
-  
-  otherPlayer.playerId = playerInfo.playerId;
-  this.otherPlayers.add(otherPlayer);
-}
-
-
-  updateCamera() {
-    // limit camera to map
-    this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
-    this.cameras.main.startFollow(this.container);
-    this.cameras.main.roundPixels = true; // avoid tile bleed
-    
-  }
-
-  createBarriers() {
-    // where the barriers will be
+    // create where the barriers will be
     this.spawns = this.physics.add.group({
       classType: Phaser.GameObjects.Sprite
     });
+    
     for (let i = 0; i < barrier_locations.length; i++) {
       const location = barrier_locations[i];//this.getValidLocation();
       // parameters are x, y, width, height
@@ -428,25 +317,108 @@ addOtherPlayers(playerInfo) {
       enemy.body.setCollideWorldBounds(true);
       enemy.body.setImmovable();
     }
+     // user input
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.cursors = this.input.keyboard.addKeys({up:Phaser.Input.Keyboard.KeyCodes.W, down:Phaser.Input.Keyboard.KeyCodes.S, left:Phaser.Input.Keyboard.KeyCodes.A, right:Phaser.Input.Keyboard.KeyCodes.D});
+
+
+    // create health bar
+    red_bar = this.add.image(90, 225, 'red_bar');
+    red_bar.setScrollFactor(0,0);
+    red_bar.setScale(0.75);
+    // red_bar.setOrigin(0.5);
+
+    green_bar = this.add.image(15, 218, 'green_bar');
+    green_bar.setScrollFactor(0,0);
+    green_bar.setScale(0.75);
+    green_bar.setOrigin(0);
+
+    // bar label
+    healthbar_label = this.add.text(15, 200, 'Player Health', {fontFamily: 'Arial', fontSize: '14px'});
+    healthbar_label.setScrollFactor(0,0);
+    healthbar_label.setResolution(10);
+
+    gameText = this.add.text(50, 140, "", { fontFamily: 'Arial', fontSize: '20px', color:'#FF0000' }).setScrollFactor(0,0);
+  }
+
+  startGame(){
+    this.socket.on('startGame', function(vars) {
+      setTimeout(function(){
+        gameStarted = true;
+      }, 5000)
+    }.bind(this));
+  }
+
+  endGame(){
+    this.socket.on('endGame', function(vars) {
+        gameStarted = false
+        window.location.href = "/post_game?game_id=" + game_id + "&user_id=" + user_id;
+    }.bind(this));
+  }
+
+  redirect(){
+    this.socket.on('redirect', function(destination) {
+        window.location.href = destination;
+    }.bind(this));
+  }
+
+  currentPlayers(){
+    this.socket.on('currentPlayers', function (players) {
+      Object.keys(players).forEach(function (id) {
+        if (players[id].socket_id === this.socket.id) {
+          this.createPlayer(players[id]);
+        } else {
+          this.addGamePlayers(players[id]);
+        }
+      }.bind(this));
+    }.bind(this));
+  }
+
+  createPlayer(playerInfo) {
+    // our player sprite created through the physics system
+    this.player = this.add.sprite(0, 0, 'player', 6);
+    if(playerInfo.team == 'A'){
+      this.player.setTint(0x0000FF);
+    }
+    else{
+      this.player.setTint(0x808080);
+    }
+
+    this.container = this.add.container(playerInfo.x, playerInfo.y);
+    this.container.setSize(16, 16);
+    this.physics.world.enable(this.container);
+    this.container.add(this.player);
+
+    // update camera
+    this.updateCamera();
+
+    // don't go out of the map
+    this.container.body.setCollideWorldBounds(true);
+
+    this.physics.add.collider(this.container, this.spawns);
   }
 
 
-  getValidLocation() {
-    let validLocation = false;
-    let x, y;
-    while (!validLocation) {
-      x = Phaser.Math.RND.between(0, this.physics.world.bounds.width);
-      y = Phaser.Math.RND.between(0, this.physics.world.bounds.height);
-
-      let occupied = false;
-      this.spawns.getChildren().forEach((child) => {
-        if (child.getBounds().contains(x, y)) {
-          occupied = true;
-        }
-      });
-      if (!occupied) validLocation = true;
+  addGamePlayers(playerInfo) {
+    const otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'player', 9);
+    if(playerInfo.team == 'A'){
+      otherPlayer.setTint(0x0000FF);
     }
-    return { x, y };
+    else{
+      otherPlayer.setTint(0x808080);
+    }
+    
+    otherPlayer.socket_id = playerInfo.socket_id;
+    this.gamePlayers.add(otherPlayer);
+  }
+
+
+  updateCamera() {
+    // limit camera to map
+    this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+    this.cameras.main.startFollow(this.container);
+    this.cameras.main.roundPixels = true; // avoid tile bleed
+    
   }
 
 
@@ -593,8 +565,8 @@ let config = {
     }
   },
   scene: [
-    BootScene,
-    WorldScene,
+    PreGame,
+    Game,
     Scoreboard
   ]
 };

@@ -7,7 +7,7 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io').listen(server);
-const io2 = require('./socket.js')(io)
+const io2 = require('./socket-connections/socket.js')(io)
 
 // update express settings
 app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
