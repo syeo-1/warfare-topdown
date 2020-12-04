@@ -400,7 +400,7 @@ class Game extends Phaser.Scene {
 
 
   addGamePlayers(playerInfo) {
-    const otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'player', 9);
+    const otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'player', 6);
     if(playerInfo.team == 'A'){
       otherPlayer.setTint(0x0000FF);
     }
