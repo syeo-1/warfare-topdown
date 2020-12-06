@@ -403,6 +403,7 @@ class Game extends Phaser.Scene {
     this.container.add(this.weapon);
 
     this.player = this.add.sprite(0, 0, 'player', 6);
+    this.player.last_key = ''
     this.container.add(this.player);
 
 
@@ -529,6 +530,7 @@ class Game extends Phaser.Scene {
       }
 
       var key_pressed = ''
+      var stopping = false
       // Update the animation last and give left/right animations precedence over up/down animations
       if (this.cursors.left.isDown) {
         this.player.anims.play('left', true);
@@ -551,13 +553,18 @@ class Game extends Phaser.Scene {
         key_pressed = 'down';
       } else {
         this.player.anims.stop();
+        key_pressed = "stopped"
+        if(this.player.last_key != stopped){
+          stopping = true
+        }
       }
 
       // emit player movement
       let x = this.container.x;
       let y = this.container.y;
       let flipX = this.player.flipX;
-      if (this.container.oldPosition && (x !== this.container.oldPosition.x || y !== this.container.oldPosition.y || flipX !== this.container.oldPosition.flipX)) {
+      if (stopping || this.container.oldPosition && (x !== this.container.oldPosition.x || y !== this.container.oldPosition.y || flipX !== this.container.oldPosition.flipX)) {
+        this.player.last_key = key_pressed
         this.socket.emit('playerMovement', { x, y, flipX, key_pressed });
       }
       // save old position data
