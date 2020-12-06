@@ -71,6 +71,7 @@ class PreGame extends Phaser.Scene {
 
       // for the barriers
       this.load.image('barrier', 'assets/images/bush.png');
+      this.load.image('gun', 'assets/images/gun.png');
 
       // load small projectile image
       this.load.image('small_projectile', 'assets/images/small_projectile.png');
@@ -97,6 +98,9 @@ class Game extends Phaser.Scene {
     let data = {user_id: user_id, game_id: game_id}
     this.socket.emit("new_player", data)
     this.gamePlayers = this.physics.add.group();
+
+    // add weapon
+   
 
 
     
@@ -219,14 +223,23 @@ class Game extends Phaser.Scene {
         if (playerInfo.socket_id === player.socket_id) {
           if (playerInfo.key_pressed == 'left') {
             player.anims.play('left', true);
+            player.weapon.x = playerInfo.x - 10
+            player.weapon.y = playerInfo.y
+            player.weapon.flipX = true
           } else if (playerInfo.key_pressed == 'right') {
             player.anims.play('right', true);
+            player.weapon.x =  playerInfo.x + 10
+            player.weapon.y = playerInfo.y
+            player.weapon.flipX = false
           } else if (playerInfo.key_pressed == 'up') {
             player.anims.play('up', true);
+            player.weapon.y = playerInfo.y
           } else if (playerInfo.key_pressed == 'down') {
             player.anims.play('down', true);
+             player.weapon.y = playerInfo.y
           } else {
             player.anims.stop();
+            
           }
           player.flipX = playerInfo.flipX;
           player.setPosition(playerInfo.x, playerInfo.y);
@@ -376,18 +389,23 @@ class Game extends Phaser.Scene {
 
   createPlayer(playerInfo) {
     // our player sprite created through the physics system
-    this.player = this.add.sprite(0, 0, 'player', 6);
-    if(playerInfo.team == 'A'){
-      this.player.setTint(0x0000FF);
-    }
-    else{
-      this.player.setTint(0x808080);
-    }
 
     this.container = this.add.container(playerInfo.x, playerInfo.y);
     this.container.setSize(16, 16);
     this.physics.world.enable(this.container);
+    
+
+    // add weapon
+    this.weapon = this.add.sprite(13, 0, 'gun');
+    this.weapon.setScale(0.02);
+    this.weapon.setSize(1, 1);
+    this.physics.world.enable(this.weapon);
+    this.container.add(this.weapon);
+
+    this.player = this.add.sprite(0, 0, 'player', 6);
     this.container.add(this.player);
+
+
 
     // update camera
     this.updateCamera();
@@ -400,14 +418,14 @@ class Game extends Phaser.Scene {
 
 
   addGamePlayers(playerInfo) {
-    const otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'player', 6);
-    if(playerInfo.team == 'A'){
-      otherPlayer.setTint(0x0000FF);
-    }
-    else{
-      otherPlayer.setTint(0x808080);
-    }
+    // add weapon
+    var weapon = this.add.sprite(playerInfo.x + 13, playerInfo.y, 'gun');
+    weapon.setScale(0.02);
+    weapon.setSize(1, 1);
     
+    const otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'player', 9);
+    
+    otherPlayer.weapon = weapon
     otherPlayer.socket_id = playerInfo.socket_id;
     this.gamePlayers.add(otherPlayer);
   }
@@ -514,11 +532,16 @@ class Game extends Phaser.Scene {
       // Update the animation last and give left/right animations precedence over up/down animations
       if (this.cursors.left.isDown) {
         this.player.anims.play('left', true);
+        
         this.player.flipX = true;
+        this.weapon.x = this.player.x - 10
+        this.weapon.flipX = true
         key_pressed = 'left';
       } else if (this.cursors.right.isDown) {
         this.player.anims.play('right', true);
         this.player.flipX = false;
+        this.weapon.x = this.player.x + 10
+        this.weapon.flipX = false
         key_pressed = 'right';
       } else if (this.cursors.up.isDown) {
         this.player.anims.play('up', true);
