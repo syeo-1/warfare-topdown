@@ -74,7 +74,7 @@ class BootScene extends Phaser.Scene {
       this.load.image('demon', 'assets/images/demon.png');
       this.load.image('worm', 'assets/images/giant-worm.png');
       this.load.image('wolf', 'assets/images/wolf.png');
-      this.load.image('sword', 'assets/images/attack-icon.png');
+      this.load.image('gun', 'assets/images/gun.png');
 
       // for the barriers
       this.load.image('barrier', 'assets/images/brick.png');
@@ -111,6 +111,9 @@ class WorldScene extends Phaser.Scene {
 
     // create map
     this.createMap();
+
+    // add weapon
+   
 
 
 
@@ -180,14 +183,23 @@ class WorldScene extends Phaser.Scene {
         if (playerInfo.playerId === player.playerId) {
           if (playerInfo.key_pressed == 'left') {
             player.anims.play('left', true);
+            player.weapon.x = playerInfo.x - 10
+            player.weapon.y = playerInfo.y
+            player.weapon.flipX = true
           } else if (playerInfo.key_pressed == 'right') {
             player.anims.play('right', true);
+            player.weapon.x =  playerInfo.x + 10
+            player.weapon.y = playerInfo.y
+            player.weapon.flipX = false
           } else if (playerInfo.key_pressed == 'up') {
             player.anims.play('up', true);
+            player.weapon.y = playerInfo.y
           } else if (playerInfo.key_pressed == 'down') {
             player.anims.play('down', true);
+             player.weapon.y = playerInfo.y
           } else {
             player.anims.stop();
+            
           }
           player.flipX = playerInfo.flipX;
           player.setPosition(playerInfo.x, playerInfo.y);
@@ -353,18 +365,25 @@ class WorldScene extends Phaser.Scene {
  
 createPlayer(playerInfo) {
   // our player sprite created through the physics system
-  this.player = this.add.sprite(0, 0, 'player', 6);
-  if(playerInfo.team == 'A'){
-    this.player.setTint(0x0000FF);
-  }
-  else{
-    this.player.setTint(0x808080);
-  }
+
 
   this.container = this.add.container(playerInfo.x, playerInfo.y);
   this.container.setSize(16, 16);
   this.physics.world.enable(this.container);
+  
+
+  // add weapon
+  this.weapon = this.add.sprite(13, 0, 'gun');
+  this.weapon.setScale(0.02);
+  this.weapon.setSize(1, 1);
+  this.physics.world.enable(this.weapon);
+  this.container.add(this.weapon);
+
+  this.player = this.add.sprite(0, 0, 'player', 6);
   this.container.add(this.player);
+
+  
+  this.attacking = false;
 
   // update camera
   this.updateCamera();
@@ -377,16 +396,21 @@ createPlayer(playerInfo) {
 
 
 addOtherPlayers(playerInfo) {
-  const otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'player', 9);
-  if(playerInfo.team == 'A'){
-    otherPlayer.setTint(0x0000FF);
-  }
-  else{
-    otherPlayer.setTint(0x808080);
-  }
+
+  // add weapon
+  var test = this.add.sprite(playerInfo.x + 13, playerInfo.y, 'gun');
+  test.setScale(0.02);
+  test.setSize(1, 1);
   
+  const otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'player', 9);
+  
+
+  
+  
+  otherPlayer.weapon = test
   otherPlayer.playerId = playerInfo.playerId;
   this.otherPlayers.add(otherPlayer);
+  // this.otherPlayers.add(test);
 }
 
 
@@ -525,11 +549,16 @@ addOtherPlayers(playerInfo) {
       // Update the animation last and give left/right animations precedence over up/down animations
       if (this.cursors.left.isDown) {
         this.player.anims.play('left', true);
+        
         this.player.flipX = true;
+        this.weapon.x = this.player.x - 10
+        this.weapon.flipX = true
         key_pressed = 'left';
       } else if (this.cursors.right.isDown) {
         this.player.anims.play('right', true);
         this.player.flipX = false;
+        this.weapon.x = this.player.x + 10
+        this.weapon.flipX = false
         key_pressed = 'right';
       } else if (this.cursors.up.isDown) {
         this.player.anims.play('up', true);
