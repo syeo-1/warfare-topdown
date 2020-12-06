@@ -276,6 +276,7 @@ class Game extends Phaser.Scene {
     this.socket.on('disconnect', function (socket_id) {
       this.gamePlayers.getChildren().forEach(function (player) {
         if (socket_id === player.socket_id) {
+          player.weapon.destroy();
           player.destroy();
         }
       }.bind(this));
@@ -421,7 +422,7 @@ class Game extends Phaser.Scene {
     this.socket.on('startGame', function(vars) {
       setTimeout(function(){
         gameStarted = true;
-      }, 2000)
+      }, 10000)
     }.bind(this));
   }
 

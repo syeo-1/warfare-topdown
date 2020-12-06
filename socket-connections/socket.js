@@ -175,14 +175,15 @@ exports = module.exports = function(io){
                                             query("END", [], (err, result) => { 
                                                 if (err) return console.log(err)
                                                 io.emit('endGame', players);
+                                                waitingQueue.clear()
 
                                             })
                                         })
                                         
                                     })
                                 })
-                            }, 30000) // set to 8:00
-                        }, 2000) // set to 0:10
+                            }, 240000) // set to 4:00
+                        }, 10000) // set to 0:10
                         
                     })
                     
@@ -243,10 +244,84 @@ exports = module.exports = function(io){
                         waitingQueue.deQueue()
                     }
                     
-                    delete players[socket.id];
+                    //delete players[socket.id];
                     socket.broadcast.emit('allPlayerInfo', players);
                     //emit a message to all players to remove this player
                     io.emit('disconnect', socket.id);
+
+
+                    var num_players_A = 0
+                    var num_players_B = 0
+                    for(var id in players){
+                        if(players[id].team == 'A'){
+                            num_players_A++
+                        }
+                        else if(players[id].team == 'B'){
+                            num_players_B++
+                        }
+                    }
+
+                    if(num_players_A == 0 || num_players_B == 0){
+                        query("BEGIN", [], async (err, result) => { 
+                            if (err) return console.log(err)
+                            var team_a_score = 0;
+                            var team_b_score = 0;
+                            var team_a_top_player = "";
+                            var team_b_top_player = "";
+                            var team_a_top_score = 0;
+                            var team_b_top_score = 0;
+                            var promiseArray = []
+                            
+                            for(var id in players){
+                                
+                                if(players[id].team == 'A'){
+                                    var player_score = players[id].kills * kill_multiplier
+                                    team_a_score += player_score
+                                    if(player_score > team_a_top_score){
+                                        team_a_top_score = player_score
+                                        team_a_top_player = players[id].username
+                                    }
+                                }
+                                else{
+                                    var player_score = players[id].kills * kill_multiplier
+                                    team_b_score += player_score
+                                    if(player_score > team_b_top_score){
+                                        team_b_top_score = player_score
+                                        team_b_top_player = players[id].username
+                                    }
+                                }
+                                
+                                var p = await new Promise((resolve) => {
+                                    text = `with a as(insert into game_stats (user_id, username, kills, deaths, game_id, team) values ($1, $2, $3, $4, $5, $6))
+                                    delete from users where user_id = $1;`
+                                    values = [players[id].user_id, players[id].username, players[id].kills, players[id].deaths, players[id].game_id, players[id].team]
+                                    query(text, values, (err, result) => { 
+                                        if (err) return console.log(err) 
+                                        resolve(id)               
+                                    })
+                                    
+                                })
+                                promiseArray.push(p)
+                                
+                            }
+                            Promise.all(promiseArray).then(vals => {
+                                text  = `update games set state = 'finished', team_a_score = $2, team_a_top_player = $3, team_a_top_score = $4, 
+                                team_b_score = $5, team_b_top_player = $6, team_b_top_score = $7 where game_id = $1;`
+                                values = [players[id].game_id, team_a_score, team_a_top_player, team_a_top_score, team_b_score, team_b_top_player, team_b_top_score]
+                                query(text, values, (err, result) => { 
+                                    if (err) return console.log(err)
+
+                                    query("END", [], (err, result) => { 
+                                        if (err) return console.log(err)
+                                        io.emit('endGame', players);
+                                        waitingQueue.clear()
+
+                                    })
+                                })
+                                
+                            })
+                        })
+                    }
                     
                 })
                 
