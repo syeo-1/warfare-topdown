@@ -554,7 +554,7 @@ class Game extends Phaser.Scene {
       } else {
         this.player.anims.stop();
         key_pressed = "stopped"
-        if(this.player.last_key != stopped){
+        if(this.player.last_key != "stopped"){
           stopping = true
         }
       }
