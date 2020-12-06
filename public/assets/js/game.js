@@ -64,7 +64,11 @@ class PreGame extends Phaser.Scene {
       // map in json format
       this.load.tilemapTiledJSON('map', 'assets/map/map.json');
       // our two characters
-      this.load.spritesheet('player', 'assets/players/players.png', {
+      this.load.spritesheet('guy', 'assets/players/players.png', {
+        frameWidth: 16,
+        frameHeight: 16
+      });
+      this.load.spritesheet('ghost', 'assets/players/players.png', {
         frameWidth: 16,
         frameHeight: 16
       });
@@ -166,11 +170,11 @@ class Game extends Phaser.Scene {
         setTimeout(function(){
           if(playerInfo.team == 'A'){
             console.log("a")
-            me.player.setTint(0x0000FF);
+            me.player.setTint(0xFFFFFF);
           }
           else{
             console.log("b")
-            me.player.setTint(0x808080);
+            me.player.setTint(0xFFFFFF);
           }
         }, 100)
 
@@ -194,12 +198,13 @@ class Game extends Phaser.Scene {
             player.health -= 20;
             player.setTint(0xFF0000);
             setTimeout(function(){
-              if(playerInfo.team == 'A'){
-                player.setTint(0x0000FF);
-              }
-              else{
-                player.setTint(0x808080);
-              }
+              // if(playerInfo.team == 'A'){
+              //   player.setTint(0xFFFFFF);
+              // }
+              // else{
+              //   player.setTint(0xFFFFFF);
+              // }
+              player.setTint(0xFFFFFF);
             }, 100)
             
             if (playerInfo.health <= 0) {
@@ -224,25 +229,41 @@ class Game extends Phaser.Scene {
     this.socket.on('playerMoved', function (playerInfo) {
       this.gamePlayers.getChildren().forEach(function (player) {
         if (playerInfo.socket_id === player.socket_id) {
-          if (playerInfo.key_pressed == 'left') {
-            player.anims.play('left', true);
+          if (playerInfo.key_pressed == 'left' && playerInfo.team == 'A') {
+            player.anims.play('guy_left', true);
             player.weapon.x = playerInfo.x - 10
             player.weapon.y = playerInfo.y
             player.weapon.flipX = true
-          } else if (playerInfo.key_pressed == 'right') {
-            player.anims.play('right', true);
+          } else if (playerInfo.key_pressed == 'right' && playerInfo.team == 'A') {
+            player.anims.play('guy_right', true);
             player.weapon.x =  playerInfo.x + 10
             player.weapon.y = playerInfo.y
             player.weapon.flipX = false
-          } else if (playerInfo.key_pressed == 'up') {
-            player.anims.play('up', true);
+          } else if (playerInfo.key_pressed == 'up' && playerInfo.team == 'A') {
+            player.anims.play('guy_up', true);
             player.weapon.y = playerInfo.y
-          } else if (playerInfo.key_pressed == 'down') {
-            player.anims.play('down', true);
-             player.weapon.y = playerInfo.y
-          } else {    
+          } else if (playerInfo.key_pressed == 'down' && playerInfo.team == 'A') {
+            player.anims.play('guy_down', true);
+            player.weapon.y = playerInfo.y
+          } else if (playerInfo.key_pressed == 'left' && playerInfo.team == 'B') {
+            player.anims.play('ghost_left', true);
+            player.weapon.x = playerInfo.x - 10
+            player.weapon.y = playerInfo.y
+            player.weapon.flipX = true
+          } else if (playerInfo.key_pressed == 'right' && playerInfo.team == 'B') {
+            player.anims.play('ghost_right', true);
+            player.weapon.x =  playerInfo.x + 10
+            player.weapon.y = playerInfo.y
+            player.weapon.flipX = false
+          } else if (playerInfo.key_pressed == 'up' && playerInfo.team == 'B') {
+            player.anims.play('ghost_up', true);
+            player.weapon.y = playerInfo.y
+          } else if (playerInfo.key_pressed == 'down' && playerInfo.team == 'B') {
+            player.anims.play('ghost_down', true);
+            player.weapon.y = playerInfo.y
+          } else {
             player.anims.stop();
-            
+            // console.log("hello");
           }
           player.flipX = playerInfo.flipX;
           player.setPosition(playerInfo.x, playerInfo.y);
@@ -283,10 +304,49 @@ class Game extends Phaser.Scene {
     this.physics.world.bounds.width = this.map.widthInPixels;
     this.physics.world.bounds.height = this.map.heightInPixels;
 
+    this.anims.create({
+      key: 'ghost_left',
+      frames: this.anims.generateFrameNumbers('ghost', {
+        frames: [22, 28, 22, 34]
+      }),
+      frameRate: 10,
+      repeat: -1
+    });
+
+    // animation with key 'right'
+    this.anims.create({
+      key: 'ghost_right',
+      frames: this.anims.generateFrameNumbers('ghost', {
+        frames: [22, 28, 22, 34]
+      }),
+      frameRate: 10,
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: 'ghost_up',
+      frames: this.anims.generateFrameNumbers('ghost', {
+        frames: [23, 29, 23, 35]
+      }),
+      frameRate: 10,
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: 'ghost_down',
+      frames: this.anims.generateFrameNumbers('ghost', {
+        frames: [21, 27, 21, 33]
+      }),
+      frameRate: 10,
+      repeat: -1
+    });
+  
+  
+
     //  animation with key 'left', we don't need left and right as we will use one and flip the sprite
     this.anims.create({
-      key: 'left',
-      frames: this.anims.generateFrameNumbers('player', {
+      key: 'guy_left',
+      frames: this.anims.generateFrameNumbers('guy', {
         frames: [1, 7, 1, 13]
       }),
       frameRate: 10,
@@ -295,8 +355,8 @@ class Game extends Phaser.Scene {
 
     // animation with key 'right'
     this.anims.create({
-      key: 'right',
-      frames: this.anims.generateFrameNumbers('player', {
+      key: 'guy_right',
+      frames: this.anims.generateFrameNumbers('guy', {
         frames: [1, 7, 1, 13]
       }),
       frameRate: 10,
@@ -304,8 +364,8 @@ class Game extends Phaser.Scene {
     });
 
     this.anims.create({
-      key: 'up',
-      frames: this.anims.generateFrameNumbers('player', {
+      key: 'guy_up',
+      frames: this.anims.generateFrameNumbers('guy', {
         frames: [2, 8, 2, 14]
       }),
       frameRate: 10,
@@ -313,8 +373,8 @@ class Game extends Phaser.Scene {
     });
 
     this.anims.create({
-      key: 'down',
-      frames: this.anims.generateFrameNumbers('player', {
+      key: 'guy_down',
+      frames: this.anims.generateFrameNumbers('guy', {
         frames: [0, 6, 0, 12]
       }),
       frameRate: 10,
@@ -392,7 +452,6 @@ class Game extends Phaser.Scene {
 
   createPlayer(playerInfo) {
     // our player sprite created through the physics system
-
     this.container = this.add.container(playerInfo.x, playerInfo.y);
     this.container.setSize(16, 16);
     this.physics.world.enable(this.container);
@@ -405,7 +464,14 @@ class Game extends Phaser.Scene {
     this.physics.world.enable(this.weapon);
     this.container.add(this.weapon);
 
-    this.player = this.add.sprite(0, 0, 'player', 6);
+    if(playerInfo.team == 'A'){
+      this.player = this.add.sprite(0, 0, 'guy', 0);
+      this.player.team = 'A';
+    }
+    else{
+      this.player = this.add.sprite(0, 0, 'ghost', 21);
+      this.player.team = 'B';
+    }
     this.player.last_key = ''
     this.container.add(this.player);
 
@@ -423,11 +489,19 @@ class Game extends Phaser.Scene {
 
   addGamePlayers(playerInfo) {
     // add weapon
+
+    
     var weapon = this.add.sprite(playerInfo.x + 13, playerInfo.y, 'gun');
     weapon.setScale(0.02);
     weapon.setSize(1, 1);
     
-    const otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'player', 9);
+    let otherPlayer;
+    if(playerInfo.team == 'A'){
+      otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'guy', 0);
+    }
+    else{
+      otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'ghost', 21);
+    }
     
     otherPlayer.weapon = weapon
     otherPlayer.socket_id = playerInfo.socket_id;
@@ -532,27 +606,45 @@ class Game extends Phaser.Scene {
         this.container.body.setVelocityY(80);
       }
 
+      var stopping  = false;
       var key_pressed = ''
       var stopping = false
       // Update the animation last and give left/right animations precedence over up/down animations
-      if (this.cursors.left.isDown) {
-        this.player.anims.play('left', true);
-        
+      if (this.cursors.left.isDown && this.player.team == 'A') {
+        this.player.anims.play('guy_left', true);
         this.player.flipX = true;
         this.weapon.x = this.player.x - 10
         this.weapon.flipX = true
         key_pressed = 'left';
-      } else if (this.cursors.right.isDown) {
-        this.player.anims.play('right', true);
+      } else if (this.cursors.right.isDown && this.player.team == 'A') {
+        this.player.anims.play('guy_right', true);
         this.player.flipX = false;
         this.weapon.x = this.player.x + 10
         this.weapon.flipX = false
         key_pressed = 'right';
-      } else if (this.cursors.up.isDown) {
-        this.player.anims.play('up', true);
+      } else if (this.cursors.up.isDown && this.player.team == 'A') {
+        this.player.anims.play('guy_up', true);
         key_pressed = 'up';
-      } else if (this.cursors.down.isDown) {
-        this.player.anims.play('down', true);
+      } else if (this.cursors.down.isDown && this.player.team == 'A') {
+        this.player.anims.play('guy_down', true);
+        key_pressed = 'down';
+      } else if (this.cursors.left.isDown && this.player.team == 'B') {
+        this.player.anims.play('ghost_left', true);
+        this.player.flipX = true;
+        key_pressed = 'left'
+        this.weapon.x = this.player.x - 10
+        this.weapon.flipX = true
+      } else if (this.cursors.right.isDown && this.player.team == 'B') {
+        this.player.anims.play('ghost_right', true);
+        this.player.flipX = false;
+        key_pressed = 'right';
+        this.weapon.x = this.player.x + 10
+        this.weapon.flipX = false
+      } else if (this.cursors.up.isDown && this.player.team == 'B') {
+        this.player.anims.play('ghost_up', true);
+        key_pressed = 'up';
+      } else if (this.cursors.down.isDown && this.player.team == 'B') {
+        this.player.anims.play('ghost_down', true);
         key_pressed = 'down';
       } else {
         this.player.anims.stop();
