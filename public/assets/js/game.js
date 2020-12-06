@@ -204,8 +204,11 @@ class Game extends Phaser.Scene {
             
             if (playerInfo.health <= 0) {
               player.setPosition(playerInfo.respawn_x, playerInfo.respawn_y);
+              player.weapon.flipX = false;
+              player.weapon.setPosition(playerInfo.respawn_x + 13, playerInfo.respawn_y);
               player.x = playerInfo.respawn_x;
               player.y = playerInfo.respawn_y;
+              player.flipX = false
               playerInfo.health = 100;
             }
             

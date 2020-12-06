@@ -156,7 +156,7 @@ exports = module.exports = function(io){
                                     io.emit('endGame', players);
                                     
                                 })
-                            }, 20000) // set to 8:00
+                            }, 30000) // set to 8:00
                         }, 2000) // set to 0:10
                         
                     })
