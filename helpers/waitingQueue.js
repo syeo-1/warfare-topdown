@@ -12,5 +12,8 @@ module.exports = {
     },
     deQueue: function decrement() {
         size--;
+    },
+    clear: function zero() {
+        size = 0;
     }
 }

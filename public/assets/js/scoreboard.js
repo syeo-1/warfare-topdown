@@ -20,12 +20,12 @@ class Scoreboard extends Phaser.Scene {
   create() {
 
     this.socket = io();
-    this.initialTime = 20; // 8:00
-    this.countDownTime = 2; // 0:10
+    this.initialTime = 240; // 8:00
+    this.countDownTime = 10; // 0:10
 
     clockText = this.add.text(140, 5, this.formatTime(this.initialTime), { fontFamily: 'Arial', fontSize: '14px', color:'#000000' });
     countDownText = this.add.text(10, 100, "WAITING: " + this.formatTime(this.countDownTime), { fontFamily: 'Arial', fontSize: '28px', color:'#FF0000' });
-    teamA_text = this.add.text(5, 5, 'Team A Score: 0', { fontFamily: 'Arial', fontSize: '14px', color:'#0000FF' }).setScrollFactor(0,0);
+    teamA_text = this.add.text(5, 5, 'Team A Score: 0', { fontFamily: 'Arial', fontSize: '14px', color:'#008000' }).setScrollFactor(0,0);
     teamB_text = this.add.text(195, 5, 'Team B Score: 0', { fontFamily: 'Arial', fontSize: '14px', color:'#D3D3D3' }).setScrollFactor(0,0);
     teamA_text.setResolution(10);
     teamB_text.setResolution(10);

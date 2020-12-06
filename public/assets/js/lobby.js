@@ -2,9 +2,11 @@ $(document).ready(function() {
     
     var socket = io();
 
+    
+
 
     socket.on('allPlayerInfo', function(players) {
-        teamA = '<ul class="list-group"><li class="list-group-item list-group-item-primary"><div class="row"><div class="col-8">TEAM A</div><div class="col-2">KILLS</div><div class="col-2">DEATHS</div></div></li>'
+        teamA = '<ul class="list-group"><li class="list-group-item list-group-item-success"><div class="row"><div class="col-8">TEAM A</div><div class="col-2">KILLS</div><div class="col-2">DEATHS</div></div></li>'
         teamB = '<ul class="list-group"><li class="list-group-item list-group-item-secondary"><div class="row"><div class="col-8">TEAM B</div><div class="col-2">KILLS</div><div class="col-2">DEATHS</div></div></li>'
         Object.keys(players).forEach(function (id) {
             
@@ -20,7 +22,12 @@ $(document).ready(function() {
         $(".team-b").html(teamB)       
     });
 
-    
+    socket.on('startGame', function() {
+        $("html, body").animate({
+            scrollTop: $("#phasor").offset().top
+        }, 750);       
+    });    
 
 });
+
 

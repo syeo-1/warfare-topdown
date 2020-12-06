@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="./assets/css/index.css">
 </head>
 
+
+
 <body class="background-light ">
     
     <div class="container text-center">
@@ -22,7 +24,7 @@
             <div class="col-6">
               
               <ul class="list-group">
-                <ul class="list-group"><li class="list-group-item list-group-item-dark">POST GAME INFO</li>
+                <ul class="list-group"><li class="list-group-item list-group-item-primary">POST GAME INFO</li>
                 <li class="list-group-item">
                   <div class="row">
                     <div class="col">
@@ -107,6 +109,7 @@
                 <% for(var i = 0; i < result.length; i++) {%>
                   <% if(result[i].user_id == user_id){ %>
                     <% if(result[i].team == 'A'){ %>
+
                       <h1 style="color: green;">YOU WON, CONGRATS!</h1>
                    <% } 
                     else{ %>
@@ -154,7 +157,13 @@
                 <% if(result[i].user_id == user_id){ %>
 
                   <ul class="list-group">
-                    <ul class="list-group"><li class="list-group-item list-group-item-primary">YOUR GAME STATS</li>
+                    <% if(result[i].team == 'A'){ %>
+                      <ul class="list-group"><li class="list-group-item list-group-item-success">YOUR GAME STATS</li>
+                   <% } 
+                    else{ %>
+                      <ul class="list-group"><li class="list-group-item list-group-item-secondary">YOUR GAME STATS</li>
+                      <% } %>
+                    
                     <li class="list-group-item">
                       <div class="row">
                         <div class="col">
@@ -230,7 +239,7 @@
              
               
               <h3>Interested in playing again?</h3>
-              <a type="button" href="/?user_id=<%= user_id%>&game_id=<%= game_id %>"  class="btn btn-success">Play Again</a>
+              <a type="button" href="/?user_id=<%= user_id%>&game_id=<%= game_id %>"  class="btn btn-secondary">Play Again</a>
             </div>
           </div>
     </div>
