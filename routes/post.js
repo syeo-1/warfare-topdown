@@ -5,7 +5,7 @@ const waitingQueue = require("../helpers/waitingQueue")
 
 router.post('/add_new_user', function (req, res) {
     var size = waitingQueue.getSize()
-    if(size >= 2){ // make 4
+    if(size >= 4){ // make 4
         return res.status(200).send({success: false, error: "Waiting Queue Full, Please come back later."})
     }
     

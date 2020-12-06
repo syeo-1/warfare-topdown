@@ -22,3 +22,9 @@ html, body {
     margin-left: auto;
     margin-right: auto;
   }
+
+  body {
+    background-image: url(../images/field_rock_background.png);
+    background-attachment: fixed;
+    background-size: cover;
+  }

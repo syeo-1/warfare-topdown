@@ -113,7 +113,7 @@ exports = module.exports = function(io){
                 io.emit('allPlayerInfo', players); // emit to all players
                 
 
-                if(Object.keys(players).length  >= 2){ // enough players, start the game, // make 4
+                if(Object.keys(players).length  >= 4){ // enough players, start the game, // make 4
                     
                     text  = `update games set state = 'started' where game_id = $1;`
                     values = [data.game_id]

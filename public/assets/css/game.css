@@ -31,3 +31,9 @@ html, body {
     font-size: 24px;
     margin-left: 100px;
 }
+
+body {
+    background-image: url(../images/light_field.png);
+    background-attachment: fixed;
+    background-size: cover;
+}
