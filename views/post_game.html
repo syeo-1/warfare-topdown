@@ -102,8 +102,45 @@
               </ul>
             </div>
             <div class="col-6">
-              <h3>Interested in playing again?</h3>
-              <a type="button" href="/?user_id=<%= user_id%>&game_id=<%= game_id %>" class="btn btn-success">Play Again</a>
+              <% if(result[0].team_a_score > result[0].team_b_score){ %>
+                <h1 style="color: blue;">TEAM A WINS ! ! !</h1>
+                <% for(var i = 0; i < result.length; i++) {%>
+                  <% if(result[i].user_id == user_id){ %>
+                    <% if(result[i].team == 'A'){ %>
+                      <h1 style="color: green;">YOU WON, CONGRATS!</h1>
+                   <% } 
+                    else{ %>
+                      <h1 style="color: red;">BETTER LUCK NEXT TIME!</h1>
+                      <% } %>
+
+
+                 <% } %>
+                  
+               <% } %>
+
+                
+
+             <% } 
+             else if (result[0].team_a_score < result[0].team_b_score){ %>
+              <h1 style="color: grey;">TEAM B WINS ! ! !</h1>
+              <% for(var i = 0; i < result.length; i++) {%>
+                <% if(result[i].user_id == user_id){ %>
+                  <% if(result[i].team == 'B'){ %>
+                    <h1 style="color: green;">YOU WON, CONGRATS!</h1>
+                 <% } 
+                  else{ %>
+                    <h1 style="color: red;">BETTER LUCK NEXT TIME!</h1>
+                    <% } %>
+
+
+               <% } %>
+                
+             <% } %>
+              <% }
+              else{ %>
+                <h1 style="color: grey;">IT'S A DRAW ! ! !</h1>
+                <% } %>
+              
             </div>
             
       
@@ -158,6 +195,16 @@
                         </div>
                       </div>
                     </li>
+                    <li class="list-group-item">
+                      <div class="row">
+                        <div class="col">
+                          TEAM
+                        </div>
+                        <div class="col">
+                          <div class="clock"><%= result[i].team %></div>
+                        </div>
+                      </div>
+                    </li>
                   </ul>
 
 
@@ -166,45 +213,24 @@
              <% } %>
 
             </div>
-            <div class="col-6">
-              <% if(result[0].team_a_score > result[0].team_b_score){ %>
-                <h1 style="color: blue;">TEAM A WINS ! ! !</h1>
-                <% for(var i = 0; i < result.length; i++) {%>
-                  <% if(result[i].user_id == user_id){ %>
-                    <% if(result[i].team == 'A'){ %>
-                      <h1 style="color: green;">YOU WON, CONGRATS!</h1>
-                   <% } 
-                    else{ %>
-                      <h1 style="color: red;">BETTER LUCK NEXT TIME!</h1>
-                      <% } %>
+            <div class="col-6" style="margin-bottom: 100px;">
 
-
-                 <% } %>
-                  
-               <% } %>
-
-                
-
-             <% } 
-             else if (result[0].team_a_score < result[0].team_b_score){ %>
-              <h1 style="color: grey;">TEAM B WINS ! ! !</h1>
               <% for(var i = 0; i < result.length; i++) {%>
                 <% if(result[i].user_id == user_id){ %>
-                  <% if(result[i].team == 'B'){ %>
-                    <h1 style="color: green;">YOU WON, CONGRATS!</h1>
+                  <% if(result[i].team == 'A'){ %>
+                    <img class="" src="./assets/players/playerA.png" alt="movement keys" style="width:50%;height:auto">
                  <% } 
                   else{ %>
-                    <h1 style="color: red;">BETTER LUCK NEXT TIME!</h1>
+                    <img class="" src="./assets/players/playerB.png" alt="movement keys" style="width:50%;height:auto">
                     <% } %>
 
 
                <% } %>
-                
-             <% } %>
-              <% }
-              else{ %>
-                <h1 style="color: grey;">IT'S A DRAW ! ! !</h1>
-                <% } %>
+               <% } %>
+             
+              
+              <h3>Interested in playing again?</h3>
+              <a type="button" href="/?user_id=<%= user_id%>&game_id=<%= game_id %>"  class="btn btn-success">Play Again</a>
             </div>
           </div>
     </div>

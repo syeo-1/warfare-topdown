@@ -62,7 +62,7 @@ router.get('/post_game', function (req, res) {
     return res.render('./index.html');
   }
   
-  text = "select * from users inner join games on users.game_id = games.game_id where games.game_id = $1 and state = 'finished';"
+  text = "select * from game_stats inner join games on game_stats.game_id = games.game_id where games.game_id = $1 and state = 'finished';"
   values = [game_id];
   query(text, values, (err, result) => { // postgres database test
     if (err) return res.status(500).send(err)

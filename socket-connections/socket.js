@@ -4,6 +4,7 @@ const waitingQueue = require("../helpers/waitingQueue")
 const players = {};
 const projectiles = [];
 const kill_multiplier = 10;
+
 let barrier_locations = [
     {x:125, y:0},
     {x:125, y:30},
@@ -122,39 +123,63 @@ exports = module.exports = function(io){
                         setTimeout(function(){
                             io.emit('startGameClock'); // wait 5 seconds for countdown then start
                             setTimeout(function(){
-                                var team_a_score = 0;
-                                var team_b_score = 0;
-                                var team_a_top_player = "";
-                                var team_b_top_player = "";
-                                var team_a_top_score = 0;
-                                var team_b_top_score = 0;
-                                Object.keys(players).forEach(function (id) {
-                                    
-                                    if(players[id].team == 'A'){
-                                        var player_score = players[id].kills * kill_multiplier
-                                        team_a_score += player_score
-                                        if(player_score > team_a_top_score){
-                                            team_a_top_score = player_score
-                                            team_a_top_player = players[id].username
-                                        }
-                                    }
-                                    else{
-                                        var player_score = players[id].kills * kill_multiplier
-                                        team_b_score += player_score
-                                        if(player_score > team_b_top_score){
-                                            team_b_top_score = player_score
-                                            team_b_top_player = players[id].username
-                                        }
-                                    } 
-                                })
-                                
-                                text  = `update games set state = 'finished', team_a_score = $2, team_a_top_player = $3, team_a_top_score = $4, 
-                                team_b_score = $5, team_b_top_player = $6, team_b_top_score = $7 where game_id = $1;`
-                                values = [data.game_id, team_a_score, team_a_top_player, team_a_top_score, team_b_score, team_b_top_player, team_b_top_score]
-                                query(text, values, (err, result) => { 
+                                query("BEGIN", [], async (err, result) => { 
                                     if (err) return console.log(err)
-                                    io.emit('endGame', players);
+                                    var team_a_score = 0;
+                                    var team_b_score = 0;
+                                    var team_a_top_player = "";
+                                    var team_b_top_player = "";
+                                    var team_a_top_score = 0;
+                                    var team_b_top_score = 0;
+                                    var promiseArray = []
                                     
+                                    for(var id in players){
+                                        
+                                        if(players[id].team == 'A'){
+                                            var player_score = players[id].kills * kill_multiplier
+                                            team_a_score += player_score
+                                            if(player_score > team_a_top_score){
+                                                team_a_top_score = player_score
+                                                team_a_top_player = players[id].username
+                                            }
+                                        }
+                                        else{
+                                            var player_score = players[id].kills * kill_multiplier
+                                            team_b_score += player_score
+                                            if(player_score > team_b_top_score){
+                                                team_b_top_score = player_score
+                                                team_b_top_player = players[id].username
+                                            }
+                                        }
+                                        
+                                        var p = await new Promise((resolve) => {
+                                            text = `with a as(insert into game_stats (user_id, username, kills, deaths, game_id, team) values ($1, $2, $3, $4, $5, $6))
+                                            delete from users where user_id = $1;`
+                                            values = [players[id].user_id, players[id].username, players[id].kills, players[id].deaths, players[id].game_id, players[id].team]
+                                            query(text, values, (err, result) => { 
+                                                if (err) return console.log(err) 
+                                                resolve(id)               
+                                            })
+                                            
+                                        })
+                                        promiseArray.push(p)
+                                        
+                                    }
+                                    Promise.all(promiseArray).then(vals => {
+                                        text  = `update games set state = 'finished', team_a_score = $2, team_a_top_player = $3, team_a_top_score = $4, 
+                                        team_b_score = $5, team_b_top_player = $6, team_b_top_score = $7 where game_id = $1;`
+                                        values = [data.game_id, team_a_score, team_a_top_player, team_a_top_score, team_b_score, team_b_top_player, team_b_top_score]
+                                        query(text, values, (err, result) => { 
+                                            if (err) return console.log(err)
+
+                                            query("END", [], (err, result) => { 
+                                                if (err) return console.log(err)
+                                                io.emit('endGame', players);
+
+                                            })
+                                        })
+                                        
+                                    })
                                 })
                             }, 30000) // set to 8:00
                         }, 2000) // set to 0:10
@@ -258,6 +283,7 @@ exports = module.exports = function(io){
 
 
     });
+
     function check_proj_collisions() {
         // update all projectile information in map
         for (let i = 0 ; i < projectiles.length ; i++) {
@@ -342,3 +368,4 @@ exports = module.exports = function(io){
     setInterval(check_proj_collisions, 16);
 
 }
+
