@@ -70,7 +70,7 @@ class PreGame extends Phaser.Scene {
       });
 
       // for the barriers
-      this.load.image('barrier', 'assets/images/brick.png');
+      this.load.image('barrier', 'assets/images/bush.png');
 
       // load small projectile image
       this.load.image('small_projectile', 'assets/images/small_projectile.png');
