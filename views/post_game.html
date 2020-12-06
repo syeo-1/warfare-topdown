@@ -59,7 +59,7 @@
                       ELAPSED TIME
                     </div>
                     <div class="col">
-                      <div class="clock">4:00</div>
+                      <div class="clock">8:00</div>
                     </div>
                   </div>
                 </li>
@@ -112,12 +112,99 @@
           <hr>
           <br>
           <div class="row">
-            <div class="col">
+            <div class="col-6">
+              <% for(var i = 0; i < result.length; i++) {%>
+                <% if(result[i].user_id == user_id){ %>
+
+                  <ul class="list-group">
+                    <ul class="list-group"><li class="list-group-item list-group-item-primary">YOUR GAME STATS</li>
+                    <li class="list-group-item">
+                      <div class="row">
+                        <div class="col">
+                          USERNAME
+                        </div>
+                        <div class="col">
+                          <div class="timer"><%= result[i].username%></div>
+                        </div>
+                      </div>
+                    </li>
+                    <li class="list-group-item">
+                      <div class="row">
+                        <div class="col">
+                          KILLS
+                        </div>
+                        <div class="col">
+                          <%= result[i].kills%>
+                        </div>
+                      </div>
+                    </li>
+                    <li class="list-group-item">
+                      <div class="row">
+                        <div class="col">
+                          DEATHS
+                        </div>
+                        <div class="col">
+                          <%= result[i].deaths%>
+                        </div>
+                      </div>
+                    </li>
+                    <li class="list-group-item">
+                      <div class="row">
+                        <div class="col">
+                          SCORE
+                        </div>
+                        <div class="col">
+                          <div class="clock"><%= result[i].kills * 10 %></div>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+
+
+               <% } %>
+                
+             <% } %>
+
+            </div>
+            <div class="col-6">
               <% if(result[0].team_a_score > result[0].team_b_score){ %>
                 <h1 style="color: blue;">TEAM A WINS ! ! !</h1>
-             <% } else{ %>
+                <% for(var i = 0; i < result.length; i++) {%>
+                  <% if(result[i].user_id == user_id){ %>
+                    <% if(result[i].team == 'A'){ %>
+                      <h1 style="color: green;">YOU WON, CONGRATS!</h1>
+                   <% } 
+                    else{ %>
+                      <h1 style="color: red;">BETTER LUCK NEXT TIME!</h1>
+                      <% } %>
+
+
+                 <% } %>
+                  
+               <% } %>
+
+                
+
+             <% } 
+             else if (result[0].team_a_score < result[0].team_b_score){ %>
               <h1 style="color: grey;">TEAM B WINS ! ! !</h1>
-              <% } %>
+              <% for(var i = 0; i < result.length; i++) {%>
+                <% if(result[i].user_id == user_id){ %>
+                  <% if(result[i].team == 'B'){ %>
+                    <h1 style="color: green;">YOU WON, CONGRATS!</h1>
+                 <% } 
+                  else{ %>
+                    <h1 style="color: red;">BETTER LUCK NEXT TIME!</h1>
+                    <% } %>
+
+
+               <% } %>
+                
+             <% } %>
+              <% }
+              else{ %>
+                <h1 style="color: grey;">IT'S A DRAW ! ! !</h1>
+                <% } %>
             </div>
           </div>
     </div>

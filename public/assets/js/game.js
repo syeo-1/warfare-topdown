@@ -64,7 +64,7 @@ class PreGame extends Phaser.Scene {
       // map in json format
       this.load.tilemapTiledJSON('map', 'assets/map/map.json');
       // our two characters
-      this.load.spritesheet('player', 'assets/players/RPG_assets.png', {
+      this.load.spritesheet('player', 'assets/players/players.png', {
         frameWidth: 16,
         frameHeight: 16
       });
@@ -237,7 +237,7 @@ class Game extends Phaser.Scene {
           } else if (playerInfo.key_pressed == 'down') {
             player.anims.play('down', true);
              player.weapon.y = playerInfo.y
-          } else {
+          } else {    
             player.anims.stop();
             
           }

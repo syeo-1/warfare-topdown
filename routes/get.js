@@ -77,9 +77,6 @@ router.get('/post_game', function (req, res) {
 });
 
 
-router.get('/game_test', function (req, res) {
-  res.render('./game.html', { user_id: -1, game_id: -1, host: -1});
-});
 
 
 module.exports = router;
